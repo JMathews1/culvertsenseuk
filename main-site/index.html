@@ -904,6 +904,76 @@
     .form-row { grid-template-columns: 1fr; }
     .procurement-note { flex-direction: column; gap: 12px; }
   }
+
+  @media (max-width: 480px) {
+    /* Nav: allow pill to wrap below logo and shrink font */
+    nav {
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 16px 20px;
+      align-items: flex-start;
+    }
+    .nav-pill {
+      font-size: 9px;
+      letter-spacing: 0.05em;
+      padding: 5px 10px;
+    }
+
+    /* Hero stats: stack vertically, swap border direction */
+    .hero-stats {
+      flex-direction: column;
+    }
+    .stat {
+      border-right: none;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 16px 20px;
+    }
+    .stat:last-child {
+      border-bottom: none;
+    }
+    .stat-n {
+      font-size: 26px;
+    }
+    .stat-l {
+      font-size: 11px;
+    }
+
+    /* Hero content: tighten spacing and font sizes */
+    .hero-content {
+      gap: 20px;
+      padding: 0 20px;
+    }
+    .hero-sub {
+      font-size: 15px;
+      line-height: 1.65;
+    }
+    .hero-ctas {
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+    .btn-primary, .btn-ghost {
+      width: 100%;
+      text-align: center;
+    }
+
+    /* Tighten section padding */
+    section {
+      padding: 48px 20px;
+    }
+    .contact {
+      padding: 56px 20px;
+    }
+    footer {
+      padding: 20px;
+    }
+
+    /* Keep body text readable */
+    .section-body, .detail-body, .detection-card-body,
+    .phase-body, .roi-body, .pilot-body {
+      font-size: 15px;
+    }
+  }
 </style>
 </head>
 <body>

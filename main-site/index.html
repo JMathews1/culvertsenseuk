@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CulvertSense · Real-Time Culvert Monitoring for UK Councils</title>
+<meta name="description" content="CulvertSense provides real-time culvert monitoring for Lead Local Flood Authorities. Know before it floods: LoRaWAN sensors, instant alerts, Section 19-ready data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #0d1f2d;
+    --ocean:  #1a3a52;
+    --tide:   #2a6496;
+    --water:  #4a9bc4;
+    --foam:   #a8d4e8;
+    --mist:   #e8f4fb;
+    --sand:   #f2ede4;
+    --slate:  #8a9ea8;
+    --amber:  #d4860a;
+    --amber-l:#fef3cd;
+    --green:  #2a7a4a;
+    --green-l:#d4efe0;
+    --white:  #ffffff;
+    --text:   #0d1f2d;
+    --text-2: #4a5a66;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: linear-gradient(160deg, #0d1f2d 0%, #1a3a52 45%, #0d2a3e 100%);
+    z-index: 0;
+  }
+
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(74,155,196,0.15);
+    animation: ripple-out 8s ease-out infinite;
+    z-index: 0;
+  }
+  .ripple:nth-child(1) { width:300px; height:300px; bottom:-80px; left:10%; animation-delay:0s; }
+  .ripple:nth-child(2) { width:500px; height:500px; bottom:-140px; left:8%; animation-delay:2s; }
+  .ripple:nth-child(3) { width:700px; height:700px; bottom:-200px; left:6%; animation-delay:4s; }
+  .ripple:nth-child(4) { width:200px; height:200px; bottom:-40px; right:15%; animation-delay:1s; }
+  .ripple:nth-child(5) { width:400px; height:400px; bottom:-100px; right:12%; animation-delay:3s; }
+
+  @keyframes ripple-out {
+    0%   { transform: scale(0.8); opacity: 0.6; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+
+  nav {
+    position: relative; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 28px 48px;
+  }
+
+  .logo {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    color: var(--white);
+  }
+  .logo span { color: var(--water); font-style: italic; }
+
+  .nav-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--foam);
+    background: rgba(74,155,196,0.12);
+    border: 1px solid rgba(74,155,196,0.25);
+    padding: 6px 14px;
+    border-radius: 20px;
+  }
+
+  .hero-content {
+    position: relative; z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 24px;
+    gap: 32px;
+  }
+
+  .hero-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--water);
+    text-transform: uppercase;
+    border: 1px solid rgba(74,155,196,0.3);
+    padding: 6px 16px;
+    border-radius: 20px;
+    display: inline-block;
+    animation: fade-up 0.8s ease both;
+  }
+
+  .hero-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(42px, 7vw, 84px);
+    line-height: 1.05;
+    letter-spacing: -2px;
+    max-width: 820px;
+    animation: fade-up 0.8s 0.1s ease both;
+  }
+  .hero-title em { color: var(--water); font-style: italic; }
+
+  .hero-sub {
+    font-size: 17px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.65);
+    max-width: 560px;
+    font-weight: 300;
+    animation: fade-up 0.8s 0.2s ease both;
+  }
+
+  .hero-ctas {
+    display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+    animation: fade-up 0.8s 0.3s ease both;
+  }
+
+  .btn-primary {
+    background: var(--water);
+    color: var(--navy);
+    font-weight: 500;
+    font-size: 14px;
+    padding: 14px 28px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: var(--foam); transform: translateY(-1px); }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--foam);
+    font-size: 14px;
+    padding: 14px 28px;
+    border-radius: 8px;
+    border: 1px solid rgba(168,212,232,0.3);
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.2s, transform 0.15s;
+    display: inline-block;
+  }
+  .btn-ghost:hover { border-color: var(--foam); transform: translateY(-1px); }
+
+  .hero-stats {
+    position: relative; z-index: 10;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    animation: fade-up 0.8s 0.4s ease both;
+  }
+
+  .stat {
+    padding: 24px 48px;
+    text-align: center;
+    border-right: 1px solid rgba(255,255,255,0.08);
+  }
+  .stat:last-child { border-right: none; }
+  .stat-n {
+    font-family: 'Instrument Serif', serif;
+    font-size: 32px;
+    color: var(--water);
+    display: block;
+  }
+  .stat-l {
+    font-size: 12px;
+    color: rgba(255,255,255,0.45);
+    font-weight: 300;
+    letter-spacing: 0.04em;
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  section { padding: 96px 48px; }
+
+  .section-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .section-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(32px, 4vw, 52px);
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+    margin-bottom: 20px;
+  }
+
+  .section-body {
+    font-size: 16px;
+    line-height: 1.75;
+    font-weight: 300;
+    max-width: 560px;
+  }
+
+  /* ── PROBLEM ── */
+  .problem {
+    background: var(--sand);
+    color: var(--text);
+  }
+  .problem .section-tag { color: #c04a20; }
+  .problem .section-title { color: var(--text); }
+  .problem .section-body { color: var(--text-2); }
+
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .fact-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 32px;
+  }
+
+  .fact-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    border-left: 3px solid #c04a20;
+  }
+  .fact-card .num {
+    font-family: 'Instrument Serif', serif;
+    font-size: 28px;
+    color: #c04a20;
+    display: block;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .fact-card p { font-size: 13px; color: var(--text-2); line-height: 1.5; }
+
+  .flood-visual {
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    height: 360px;
+    background: #0b1c2a;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .flood-visual svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  @keyframes flow-right {
+    0%   { stroke-dashoffset: 40; }
+    100% { stroke-dashoffset: 0; }
+  }
+  @keyframes flow-left {
+    0%   { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: 40; }
+  }
+  .flow-arrow-up   { animation: flow-left  1.8s linear infinite; }
+  .flow-arrow-down { animation: flow-right 2.2s linear infinite; }
+
+  /* ── SYSTEM ── */
+  .system {
+    background: var(--navy);
+    color: var(--white);
+  }
+  .system .section-tag { color: var(--water); }
+
+  .system-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .system-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: end;
+    margin-bottom: 64px;
+  }
+
+  .system-body { color: rgba(255,255,255,0.6); }
+
+  .nodes {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    position: relative;
+    margin-bottom: 48px;
+  }
+
+  .node-connector { display: none; }
+
+  .node-item {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    padding: 0 8px;
+  }
+
+  .node-dot {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    margin-bottom: 16px;
+    border: 2px solid transparent;
+    transition: all 0.25s;
+    position: relative;
+    pointer-events: none;
+  }
+
+  .node-item:hover .node-dot,
+  .node-item.active .node-dot {
+    transform: scale(1.1);
+    border-color: var(--water);
+  }
+
+  .node-item:nth-child(1) .node-dot { background: rgba(74,155,196,0.2); }
+  .node-item:nth-child(2) .node-dot { background: rgba(42,122,74,0.2); }
+  .node-item:nth-child(3) .node-dot { background: rgba(90,90,120,0.2); }
+  .node-item:nth-child(4) .node-dot { background: rgba(212,134,10,0.2); }
+
+  .node-item.active:nth-child(1) .node-dot { background: rgba(74,155,196,0.35); }
+  .node-item.active:nth-child(2) .node-dot { background: rgba(42,122,74,0.35); }
+  .node-item.active:nth-child(3) .node-dot { background: rgba(90,90,120,0.35); }
+  .node-item.active:nth-child(4) .node-dot { background: rgba(212,134,10,0.35); }
+
+  .node-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    transition: color 0.2s;
+  }
+  .node-item:not(.active) .node-dot { opacity: 0.6; }
+  .node-item:not(.active):hover .node-dot { opacity: 1; }
+  .node-item.active .node-label { color: var(--white); }
+  .node-item:hover .node-label { color: rgba(255,255,255,0.85); }
+
+  .node-arrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: rgba(74,155,196,0.4);
+    position: absolute;
+    right: -8px; top: 18px;
+    z-index: 2;
+  }
+  .node-item:last-child .node-arrow { display: none; }
+
+  .node-detail {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 36px;
+    min-height: 200px;
+    transition: all 0.3s;
+  }
+
+  .detail-content { display: none; }
+  .detail-content.active { display: block; animation: fade-up 0.3s ease; }
+
+  .detail-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 26px;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+
+  .detail-body {
+    font-size: 15px;
+    line-height: 1.75;
+    color: rgba(255,255,255,0.65);
+    font-weight: 300;
+    margin-bottom: 20px;
+    max-width: 600px;
+  }
+
+  .detail-specs { display: flex; gap: 24px; flex-wrap: wrap; }
+
+  .spec-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+  }
+  .spec-blue  { background: rgba(74,155,196,0.15);  color: var(--foam); border: 1px solid rgba(74,155,196,0.25); }
+  .spec-green { background: rgba(42,122,74,0.15);   color: #7fd4a0;     border: 1px solid rgba(42,122,74,0.25); }
+  .spec-gray  { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.1); }
+  .spec-amber { background: rgba(212,134,10,0.15);  color: #f5c842;     border: 1px solid rgba(212,134,10,0.25); }
+
+  /* ── WHY LORAWAN ── */
+  .why {
+    background: var(--mist);
+    color: var(--text);
+  }
+  .why .section-tag { color: var(--tide); }
+  .why .section-title { color: var(--text); }
+
+  .why-inner { max-width: 1100px; margin: 0 auto; }
+
+  .why-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: end;
+    margin-bottom: 56px;
+  }
+
+  .why-body { color: var(--text-2); }
+
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .compare-card {
+    background: white;
+    border-radius: 14px;
+    padding: 28px;
+    border-top: 3px solid transparent;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .compare-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.1); }
+  .compare-card.hero-card { border-top-color: var(--tide); }
+  .compare-card.ok-card   { border-top-color: var(--slate); }
+  .compare-card.bad-card  { border-top-color: #ccc; opacity: 0.65; }
+
+  .compare-name { font-weight: 500; font-size: 15px; margin-bottom: 8px; color: var(--text); }
+  .compare-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    padding: 3px 10px;
+    border-radius: 10px;
+    display: inline-block;
+    margin-bottom: 16px;
+  }
+  .badge-best { background: rgba(42,100,150,0.1); color: var(--tide); }
+  .badge-ok   { background: rgba(90,90,90,0.1);   color: #666; }
+  .badge-ltd  { background: rgba(200,60,60,0.08); color: #a04040; }
+
+  .compare-rows { display: flex; flex-direction: column; gap: 10px; }
+  .compare-row  { display: flex; justify-content: space-between; font-size: 13px; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; }
+  .compare-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .cr-key { color: var(--text-2); }
+  .cr-val { font-weight: 500; color: var(--text); }
+
+  /* ── DETECTION ── */
+  .detection { background: var(--navy); color: var(--white); }
+  .detection .section-tag { color: var(--water); }
+
+  .detection-inner { max-width: 1100px; margin: 0 auto; }
+
+  .detection-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: end;
+    margin-bottom: 56px;
+  }
+
+  .detection-body { color: rgba(255,255,255,0.6); }
+
+  .detection-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .detection-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 32px;
+  }
+
+  .detection-card-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+  }
+
+  .detection-card-body {
+    font-size: 14px;
+    line-height: 1.75;
+    color: rgba(255,255,255,0.55);
+    font-weight: 300;
+    margin-bottom: 20px;
+  }
+
+  .detection-card.dual {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    background: rgba(74,155,196,0.06);
+    border-color: rgba(74,155,196,0.2);
+  }
+
+  .dual-col-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .dual-col-title.pro { color: var(--water); }
+  .dual-col-title.con { color: rgba(255,180,100,0.8); }
+
+  .dual-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+
+  .dual-list li {
+    font-size: 13px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.55);
+    padding-left: 16px;
+    position: relative;
+  }
+
+  .dual-list li::before { content: '—'; position: absolute; left: 0; color: rgba(255,255,255,0.2); }
+
+  /* ── ROI SECTION ── */
+  .roi {
+    background: var(--ocean);
+    color: var(--white);
+  }
+  .roi .section-tag { color: var(--foam); }
+
+  .roi-inner { max-width: 1100px; margin: 0 auto; }
+
+  .roi-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: end;
+    margin-bottom: 56px;
+  }
+
+  .roi-body { color: rgba(255,255,255,0.6); }
+
+  .roi-costs {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .cost-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 16px 20px;
+  }
+
+  .cost-label {
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+    font-weight: 300;
+  }
+
+  .cost-val {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    color: var(--water);
+  }
+
+  .cite {
+    font-size: 10px;
+    color: rgba(74,155,196,0.6);
+    vertical-align: super;
+    margin-left: 2px;
+  }
+
+  .roi-cite {
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    font-weight: 300;
+    line-height: 1.5;
+    margin-top: 4px;
+  }
+
+  .pricing-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 16px 20px;
+  }
+
+  .pricing-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+
+  .pricing-card-desc {
+    font-size: 13px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  /* ── PILOT / PRICING ── */
+  .pilot { background: var(--navy); color: var(--white); }
+  .pilot .section-tag { color: var(--water); }
+
+  .pilot-inner { max-width: 1100px; margin: 0 auto; }
+
+  .pilot-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: end;
+    margin-bottom: 56px;
+  }
+
+  .pilot-body { color: rgba(255,255,255,0.6); }
+
+  .phases {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .phase {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 28px;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .phase:hover { background: rgba(255,255,255,0.08); }
+
+  .phase-num {
+    font-family: 'Instrument Serif', serif;
+    font-size: 48px;
+    color: rgba(255,255,255,0.08);
+    line-height: 1;
+    position: absolute;
+    top: 16px; right: 20px;
+  }
+
+  .phase-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--water);
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .phase-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+
+  .phase-body {
+    font-size: 14px;
+    line-height: 1.65;
+    color: rgba(255,255,255,0.55);
+    font-weight: 300;
+  }
+
+  .phase-cost {
+    margin-top: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--water);
+    letter-spacing: 0.06em;
+  }
+
+  .procurement-note {
+    margin-top: 40px;
+    background: rgba(74,155,196,0.07);
+    border: 1px solid rgba(74,155,196,0.2);
+    border-radius: 12px;
+    padding: 24px 28px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .procurement-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .procurement-text h4 {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--water);
+    margin-bottom: 6px;
+  }
+
+  .procurement-text p {
+    font-size: 14px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  /* ── CONTACT ── */
+  .contact {
+    background: var(--navy);
+    text-align: center;
+    padding: 80px 48px;
+  }
+
+  .contact-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(28px,4vw,52px);
+    letter-spacing: -1.5px;
+    margin-bottom: 16px;
+  }
+
+  .contact-sub {
+    font-size: 16px;
+    color: rgba(255,255,255,0.5);
+    max-width: 480px;
+    margin: 0 auto 40px;
+    font-weight: 300;
+    line-height: 1.65;
+  }
+
+  .contact-form {
+    max-width: 480px;
+    margin: 0 auto;
+    text-align: left;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .form-field label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+  }
+
+  .form-field input,
+  .form-field select,
+  .form-field textarea {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--white);
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .form-field select option { background: var(--navy); color: var(--white); }
+
+  .form-field input::placeholder,
+  .form-field textarea::placeholder { color: rgba(255,255,255,0.25); }
+
+  .form-field input:focus,
+  .form-field select:focus,
+  .form-field textarea:focus { border-color: rgba(74,155,196,0.5); }
+
+  .form-field textarea { resize: vertical; min-height: 100px; }
+
+  .form-submit {
+    width: 100%;
+    background: var(--water);
+    color: var(--navy);
+    font-weight: 500;
+    font-size: 15px;
+    padding: 15px 28px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    margin-top: 8px;
+  }
+  .form-submit:hover { background: var(--foam); transform: translateY(-1px); }
+
+  .contact-alt {
+    margin-top: 28px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.3);
+    font-weight: 300;
+  }
+
+  .contact-alt a {
+    color: var(--water);
+    text-decoration: none;
+  }
+  .contact-alt a:hover { text-decoration: underline; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: rgba(0,0,0,0.3);
+    padding: 24px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .footer-right {
+    text-align: right;
+  }
+
+  .footer-legal {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.06em;
+    line-height: 1.8;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    nav { padding: 20px 24px; }
+    section { padding: 64px 24px; }
+    .problem-grid, .system-header, .why-header, .pilot-header,
+    .roi-header, .detection-header { grid-template-columns: 1fr; gap: 32px; }
+    .nodes { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+    .compare-grid, .phases { grid-template-columns: 1fr; }
+    .fact-cards { grid-template-columns: 1fr; }
+    .stat { padding: 16px 24px; }
+    footer { flex-direction: column; gap: 12px; text-align: center; }
+    .footer-right { text-align: center; }
+    .detection-cards { grid-template-columns: 1fr; }
+    .detection-card.dual { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .procurement-note { flex-direction: column; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg">
+    <div class="ripple"></div>
+    <div class="ripple"></div>
+    <div class="ripple"></div>
+    <div class="ripple"></div>
+    <div class="ripple"></div>
+  </div>
+
+  <nav>
+    <div class="logo">Culvert<span>Sense</span></div>
+    <div class="nav-pill">LEAD LOCAL FLOOD AUTHORITIES · ENGLAND</div>
+  </nav>
+
+  <div class="hero-content">
+    <span class="hero-tag">LoRaWAN · Early Warning · Infrastructure</span>
+    <h1 class="hero-title">Know before<br>it <em>floods.</em></h1>
+    <p class="hero-sub">Real-time culvert monitoring for UK councils. Continuous water-level sensors give operations teams early warning before overtopping — not a phone call after the road closes.</p>
+    <div class="hero-ctas">
+      <a href="#system" class="btn-primary">See how it works</a>
+      <a href="#contact" class="btn-ghost">Request a pilot</a>
+    </div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat"><span class="stat-n">£450M+</span><span class="stat-l">insured flood losses, Storm Babet Oct 2023</span></div>
+    <div class="stat"><span class="stat-n">200,000+</span><span class="stat-l">properties at surface water flood risk in England</span></div>
+    <div class="stat"><span class="stat-n">&lt; 2 min</span><span class="stat-l">alert latency from sensor to inbox</span></div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="problem">
+  <div class="problem-grid">
+    <div>
+      <span class="section-tag">The Problem</span>
+      <h2 class="section-title">Small culverts.<br>Big consequences.</h2>
+      <p class="section-body">Storm Babet in October 2023 caused catastrophic flooding across England, particularly in Yorkshire, Lincolnshire and the East Midlands. In many cases, culverts blocked by debris backed up silently until roads were overwhelmed. Lead Local Flood Authorities are obligated under Section 19 of the Flood and Water Management Act 2010 to investigate significant flood events, yet most culverts are only inspected on a two-yearly reactive cycle, if at all.</p>
+      <div class="fact-cards">
+        <div class="fact-card"><span class="num">S.19</span><p>Section 19 investigations required after significant flood events: continuous data supports your statutory duty</p></div>
+        <div class="fact-card"><span class="num">2-yearly</span><p>Typical reactive inspection cycle for culverts. Blocked inlets can fill silently between visits</p></div>
+        <div class="fact-card"><span class="num">£2,500</span><p>Average cost of a gully clean and road closure following a culvert-related blockage incident</p></div>
+        <div class="fact-card"><span class="num">152</span><p>LLFAs — Lead Local Flood Authorities in England, each with a statutory duty to manage flood risk from ordinary watercourses and culverts</p></div>
+      </div>
+    </div>
+    <div class="flood-visual">
+      <!--
+        Cross-section elevation diagram (not to scale)
+        Left zone: upstream pool  |  Centre: road embankment + culvert  |  Right: downstream
+      -->
+      <svg viewBox="0 0 500 360" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+
+        <!-- ── BACKGROUND ── -->
+        <rect width="500" height="360" fill="#0b1c2a"/>
+
+        <!-- ── GROUND BANKS ── -->
+        <!-- Left (upstream) bank -->
+        <polygon points="0,260 158,260 126,360 0,360" fill="#182a16"/>
+        <!-- Right (downstream) bank -->
+        <polygon points="342,272 500,272 500,360 370,360" fill="#182a16"/>
+
+        <!-- ── EMBANKMENT ── -->
+        <polygon points="158,100 342,100 374,360 126,360" fill="#1c2b1a"/>
+        <!-- Embankment top edge (subtle highlight) -->
+        <line x1="158" y1="100" x2="342" y2="100" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+
+        <!-- ── ROAD SURFACE ── -->
+        <!-- Road base -->
+        <rect x="152" y="84" width="196" height="18" fill="#222222" rx="1"/>
+        <!-- Road wearing course (top) -->
+        <rect x="150" y="78" width="200" height="9" fill="#2a2a2a" rx="1"/>
+        <!-- Road top edge line -->
+        <line x1="150" y1="78" x2="350" y2="78" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <!-- Road centreline (very subtle dashes) -->
+        <line x1="250" y1="78" x2="250" y2="102" stroke="rgba(255,255,255,0.06)" stroke-width="1.5" stroke-dasharray="4,4"/>
+
+        <!-- ── CULVERT PIPE ── -->
+        <!-- Barrel -->
+        <rect x="164" y="224" width="172" height="50" fill="#0c1520" rx="2"/>
+        <rect x="164" y="224" width="172" height="50" fill="none" stroke="#354e5e" stroke-width="1.5" rx="2"/>
+        <!-- Internal shadow lines (give depth) -->
+        <line x1="164" y1="234" x2="336" y2="234" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+        <!-- Portal faces -->
+        <ellipse cx="164" cy="249" rx="6" ry="25" fill="#080e14" stroke="#354e5e" stroke-width="1.5"/>
+        <ellipse cx="336" cy="249" rx="6" ry="25" fill="#080e14" stroke="#354e5e" stroke-width="1.5"/>
+
+        <!-- ── UPSTREAM WATER ── -->
+        <!-- Water body -->
+        <rect x="0" y="252" width="163" height="108" fill="rgba(20,65,112,0.55)"/>
+        <!-- Water surface line -->
+        <line x1="0" y1="252" x2="163" y2="252" stroke="rgba(168,212,232,0.85)" stroke-width="1.8"/>
+        <!-- Subtle water texture lines -->
+        <line x1="14" y1="270" x2="60" y2="270" stroke="rgba(74,155,196,0.15)" stroke-width="1"/>
+        <line x1="8"  y1="286" x2="72" y2="286" stroke="rgba(74,155,196,0.10)" stroke-width="1"/>
+        <!-- Alert threshold -->
+        <line x1="0" y1="240" x2="163" y2="240" stroke="rgba(205,75,55,0.5)" stroke-width="1" stroke-dasharray="8,5"/>
+        <text x="5" y="237" font-family="DM Mono, monospace" font-size="6.5" letter-spacing="0.5" fill="rgba(205,75,55,0.75)">ALERT THRESHOLD</text>
+
+        <!-- ── DOWNSTREAM WATER (lower level = culvert is flowing) ── -->
+        <rect x="343" y="268" width="157" height="92" fill="rgba(20,65,112,0.35)"/>
+        <line x1="343" y1="268" x2="500" y2="268" stroke="rgba(168,212,232,0.45)" stroke-width="1.2"/>
+        <line x1="360" y1="284" x2="420" y2="284" stroke="rgba(74,155,196,0.10)" stroke-width="1"/>
+
+        <!-- ── SENSOR MOUNTING ── -->
+        <!-- Headwall vertical post -->
+        <rect x="155" y="100" width="4" height="156" fill="#3e5a6a" rx="1"/>
+        <!-- Horizontal arm -->
+        <rect x="110" y="128" width="49" height="3" fill="#3e5a6a" rx="1"/>
+        <!-- Arm-to-post gusset (small diagonal brace) -->
+        <line x1="148" y1="131" x2="159" y2="114" stroke="#3e5a6a" stroke-width="2" stroke-linecap="round"/>
+
+        <!-- ── SENSOR BODY ── -->
+        <rect x="88" y="114" width="46" height="26" rx="5" fill="#122840" stroke="#4a9bc4" stroke-width="1.5"/>
+        <!-- LED indicator dot -->
+        <circle cx="98" cy="122" r="2.5" fill="rgba(100,220,100,0.85)"/>
+        <!-- Sensor label -->
+        <text x="120" y="125" text-anchor="middle" font-family="DM Mono, monospace" font-size="7" fill="#a8d4e8" letter-spacing="0.5">SENSOR</text>
+        <!-- Transducer face (the emitter, pointing down) -->
+        <rect x="99" y="140" width="24" height="6" rx="3" fill="#4a9bc4" opacity="0.9"/>
+        <!-- Transducer lens highlights -->
+        <line x1="102" y1="143" x2="108" y2="143" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-linecap="round"/>
+        <line x1="112" y1="143" x2="118" y2="143" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-linecap="round"/>
+
+        <!-- ── ULTRASONIC BEAM ── -->
+        <!-- Outer left ray -->
+        <line x1="111" y1="146" x2="89"  y2="252" stroke="rgba(74,155,196,0.30)" stroke-width="1"   stroke-dasharray="5,4" stroke-linecap="round"/>
+        <!-- Inner left ray -->
+        <line x1="111" y1="146" x2="100" y2="252" stroke="rgba(74,155,196,0.50)" stroke-width="1"   stroke-dasharray="5,4" stroke-linecap="round"/>
+        <!-- Centre ray (strongest) -->
+        <line x1="111" y1="146" x2="111" y2="252" stroke="rgba(74,155,196,0.80)" stroke-width="1.2" stroke-dasharray="5,4" stroke-linecap="round"/>
+        <!-- Inner right ray -->
+        <line x1="111" y1="146" x2="122" y2="252" stroke="rgba(74,155,196,0.50)" stroke-width="1"   stroke-dasharray="5,4" stroke-linecap="round"/>
+        <!-- Outer right ray -->
+        <line x1="111" y1="146" x2="133" y2="252" stroke="rgba(74,155,196,0.30)" stroke-width="1"   stroke-dasharray="5,4" stroke-linecap="round"/>
+        <!-- Reflection dot at water surface -->
+        <circle cx="111" cy="252" r="4" fill="rgba(74,155,196,0.9)" stroke="rgba(168,212,232,0.6)" stroke-width="1.2"/>
+
+        <!-- ── LoRa SIGNAL ARCS ── -->
+        <!-- Three concentric arcs, emanating upper-right from sensor -->
+        <path d="M 130 124 Q 143 110 156 122" fill="none" stroke="rgba(74,155,196,0.70)" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M 128 116 Q 145  96 162 112" fill="none" stroke="rgba(74,155,196,0.45)" stroke-width="1.3" stroke-linecap="round"/>
+        <path d="M 126 108 Q 147  82 168 102" fill="none" stroke="rgba(74,155,196,0.22)" stroke-width="1.1" stroke-linecap="round"/>
+        <!-- LoRa label -->
+        <text x="154" y="138" font-family="DM Mono, monospace" font-size="7" fill="rgba(74,155,196,0.65)" letter-spacing="0.5">LoRa</text>
+
+        <!-- ── ANNOTATION LABELS (right-side column) ── -->
+        <!-- Leader lines end at x=346 with a small dot, text at x=352 -->
+
+        <!-- Road surface -->
+        <line x1="350" y1="87" x2="396" y2="64" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+        <circle cx="350" cy="87" r="2" fill="rgba(255,255,255,0.18)"/>
+        <text x="398" y="62" font-family="DM Mono, monospace" font-size="8" letter-spacing="1" fill="rgba(255,255,255,0.40)">ROAD SURFACE</text>
+
+        <!-- Culvert pipe -->
+        <line x1="342" y1="249" x2="396" y2="249" stroke="rgba(255,255,255,0.10)" stroke-width="0.8"/>
+        <circle cx="342" cy="249" r="2" fill="rgba(255,255,255,0.16)"/>
+        <text x="398" y="253" font-family="DM Mono, monospace" font-size="8" letter-spacing="1" fill="rgba(255,255,255,0.32)">CULVERT PIPE</text>
+
+        <!-- Water level -->
+        <line x1="163" y1="252" x2="190" y2="226" stroke="rgba(168,212,232,0.28)" stroke-width="0.8"/>
+        <circle cx="163" cy="252" r="2" fill="rgba(168,212,232,0.45)"/>
+        <text x="192" y="223" font-family="DM Mono, monospace" font-size="8" letter-spacing="1" fill="rgba(168,212,232,0.65)">WATER LEVEL</text>
+
+        <!-- ── ZONE LABELS ── -->
+        <text x="55"  y="208" text-anchor="middle" font-family="DM Mono, monospace" font-size="8" letter-spacing="2" fill="rgba(168,212,232,0.22)">UPSTREAM</text>
+        <text x="421" y="222" text-anchor="middle" font-family="DM Mono, monospace" font-size="8" letter-spacing="2" fill="rgba(168,212,232,0.22)">DOWNSTREAM</text>
+
+        <!-- ── STATUS PILL ── -->
+        <rect x="8" y="8" width="130" height="22" rx="4" fill="rgba(0,0,0,0.45)"/>
+        <circle cx="20" cy="19" r="3.5" fill="rgba(100,220,100,0.88)"/>
+        <text x="28" y="23" font-family="DM Mono, monospace" font-size="8" letter-spacing="1.2" fill="rgba(168,212,232,0.85)">MONITORING · LIVE</text>
+
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- SYSTEM -->
+<section class="system" id="system">
+  <div class="system-inner">
+    <div class="system-header">
+      <div>
+        <span class="section-tag">How It Works</span>
+        <h2 class="section-title">Four components.<br>One early warning.</h2>
+      </div>
+      <p class="section-body system-body">The system runs on standard off-the-shelf hardware: no proprietary lock-in, no cellular dependency, no mains power required.</p>
+    </div>
+
+    <div class="nodes">
+      <div class="node-connector"></div>
+      <div class="node-item active" onclick="showDetail(0)">
+        <div class="node-dot">📡</div>
+        <span class="node-label">Sensor Node</span>
+        <span class="node-arrow">→</span>
+      </div>
+      <div class="node-item" onclick="showDetail(1)">
+        <div class="node-dot">📶</div>
+        <span class="node-label">LoRa Gateway</span>
+        <span class="node-arrow">→</span>
+      </div>
+      <div class="node-item" onclick="showDetail(2)">
+        <div class="node-dot">☁️</div>
+        <span class="node-label">Network Server</span>
+        <span class="node-arrow">→</span>
+      </div>
+      <div class="node-item" onclick="showDetail(3)">
+        <div class="node-dot">🔔</div>
+        <span class="node-label">Alert</span>
+      </div>
+    </div>
+    <p style="text-align:center; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.12em; color:rgba(255,255,255,0.25); margin-bottom:24px; text-transform:uppercase;">Select a component to explore</p>
+
+    <div class="node-detail">
+      <div class="detail-content active" id="detail-0">
+        <div class="detail-title">Sensor Node</div>
+        <p class="detail-body">A waterproof ultrasonic sensor (JSN-SR04T) is mounted at or near the culvert inlet, pointing downward toward the water surface. It fires a 40kHz pulse, measures the echo return time, and calculates the distance to the water surface. The device wakes every few minutes, takes a reading, and transmits over LoRa radio, then goes back to sleep to preserve battery. No mains power. No cellular SIM.</p>
+        <div class="detail-specs">
+          <span class="spec-pill spec-blue">ESP32 microcontroller</span>
+          <span class="spec-pill spec-blue">JSN-SR04T ultrasonic</span>
+          <span class="spec-pill spec-blue">Solar option available</span>
+        </div>
+      </div>
+      <div class="detail-content" id="detail-1">
+        <div class="detail-title">LoRaWAN Gateway</div>
+        <p class="detail-body">A single gateway, a small weatherproof box mounted on a rooftop or utility pole, receives transmissions from sensor nodes up to 2km away in urban areas and further in open terrain. One gateway can serve dozens of sensor nodes across an area. It connects to the internet over ethernet or WiFi and forwards readings to the server. If LoRa coverage is unavailable at a site, a mobile data connection can be used as a fallback.</p>
+        <div class="detail-specs">
+          <span class="spec-pill spec-green">~2km urban · 10km+ line of sight</span>
+          <span class="spec-pill spec-green">One gateway, many sensors</span>
+          <span class="spec-pill spec-green">No cellular required</span>
+          <span class="spec-pill spec-gray">NB-IoT fallback available</span>
+        </div>
+      </div>
+      <div class="detail-content" id="detail-2">
+        <div class="detail-title">Network Server</div>
+        <p class="detail-body">Once the gateway receives a reading from a sensor node, it passes the data to a server that decides what to do with it. This is where the alert rules live: if the water level crosses a set threshold, an alert fires. The server is privately operated, meaning your council's data stays under your council's control. Over time, readings are correlated against Met Office rainfall data to build a clearer picture of which culverts are most at risk and when.</p>
+        <div class="detail-specs">
+          <span class="spec-pill spec-gray">Council-operated or hosted</span>
+          <span class="spec-pill spec-gray">The Things Stack (open source)</span>
+          <span class="spec-pill spec-gray">Threshold + rate-of-rise logic</span>
+          <span class="spec-pill spec-gray">Met Office API integration</span>
+        </div>
+      </div>
+      <div class="detail-content" id="detail-3">
+        <div class="detail-title">Alert</div>
+        <p class="detail-body">When a threshold is breached, a webhook fires within seconds, delivering an alert to email, SMS, or an operations dashboard. The early warning gives highways and drainage teams time to inspect, close roads proactively, or deploy temporary measures. All data is logged, providing the continuous sensor record that supports Section 19 flood investigations.</p>
+        <div class="detail-specs">
+          <span class="spec-pill spec-amber">Email / SMS / dashboard</span>
+          <span class="spec-pill spec-amber">Configurable early warning</span>
+          <span class="spec-pill spec-amber">&lt; 2 min alert latency</span>
+          <span class="spec-pill spec-amber">S.19 investigation evidence</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY LORAWAN -->
+<section class="why">
+  <div class="why-inner">
+    <div class="why-header">
+      <div>
+        <span class="section-tag">Connectivity Options</span>
+        <h2 class="section-title">Why LoRaWAN, and what if it isn't available?</h2>
+      </div>
+      <p class="section-body why-body">LoRaWAN is the preferred technology, but the sensor hardware works with multiple connectivity options. If LoRa coverage doesn't reach a specific site, we switch the radio module and keep everything else identical.</p>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-card hero-card">
+        <div class="compare-name">LoRaWAN</div>
+        <span class="compare-badge badge-best">PREFERRED</span>
+        <div class="compare-rows">
+          <div class="compare-row"><span class="cr-key">Range</span><span class="cr-val">~2km urban · 10km+ LoS</span></div>
+          <div class="compare-row"><span class="cr-key">Running cost</span><span class="cr-val">Low (self-hosted)</span></div>
+          <div class="compare-row"><span class="cr-key">Battery life</span><span class="cr-val">6–18 months</span></div>
+          <div class="compare-row"><span class="cr-key">Best for</span><span class="cr-val">Urban &amp; semi-rural sites</span></div>
+          <div class="compare-row"><span class="cr-key">Infrastructure</span><span class="cr-val">1 gateway needed</span></div>
+        </div>
+      </div>
+      <div class="compare-card ok-card">
+        <div class="compare-name">NB-IoT / LTE-M</div>
+        <span class="compare-badge badge-ok">FALLBACK</span>
+        <div class="compare-rows">
+          <div class="compare-row"><span class="cr-key">Range</span><span class="cr-val">Cellular coverage</span></div>
+          <div class="compare-row"><span class="cr-key">Running cost</span><span class="cr-val">~£4–8/mo per SIM</span></div>
+          <div class="compare-row"><span class="cr-key">Battery life</span><span class="cr-val">3–12 months</span></div>
+          <div class="compare-row"><span class="cr-key">Best for</span><span class="cr-val">Rural sites, no LoRa</span></div>
+        </div>
+      </div>
+      <div class="compare-card bad-card">
+        <div class="compare-name">Standard 4G LTE</div>
+        <span class="compare-badge badge-ltd">LAST RESORT</span>
+        <div class="compare-rows">
+          <div class="compare-row"><span class="cr-key">Range</span><span class="cr-val">Cellular coverage</span></div>
+          <div class="compare-row"><span class="cr-key">Running cost</span><span class="cr-val">~£12–20/mo per SIM</span></div>
+          <div class="compare-row"><span class="cr-key">Battery life</span><span class="cr-val">1–3 months</span></div>
+          <div class="compare-row"><span class="cr-key">Best for</span><span class="cr-val">Short-term deployments</span></div>
+          <div class="compare-row"><span class="cr-key">Infrastructure</span><span class="cr-val">None</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DETECTION -->
+<section class="detection">
+  <div class="detection-inner">
+    <div class="detection-header">
+      <div>
+        <span class="section-tag">What Can Be Detected</span>
+        <h2 class="section-title">More than just<br>rising water.</h2>
+      </div>
+      <p class="section-body detection-body">A single upstream sensor gives you two distinct alert types: flood early warning and blockage detection, from the same hardware.</p>
+    </div>
+
+    <div class="detection-cards">
+      <div class="detection-card">
+        <span class="section-tag" style="color:var(--water); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:12px; display:block;">Flood early warning</span>
+        <div class="detection-card-title">Water level rising with rainfall</div>
+        <p class="detection-card-body">During intense rainfall, upstream water backs up against the culvert as flow exceeds capacity. The sensor detects the rising surface and fires an alert before overtopping, giving highways and drainage teams time to respond before road damage or property flooding occurs.</p>
+        <div class="detail-specs">
+          <span class="spec-pill spec-blue">Threshold alert</span>
+          <span class="spec-pill spec-blue">Rate-of-rise alert</span>
+          <span class="spec-pill spec-blue">Weather correlated</span>
+        </div>
+      </div>
+
+      <div class="detection-card">
+        <span class="section-tag" style="color:rgba(255,180,100,0.8); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:12px; display:block;">Blockage detection</span>
+        <div class="detection-card-title">Water rising faster than rain explains</div>
+        <p class="detection-card-body">When debris blocks the culvert inlet, water backs up faster than rainfall alone would predict. If the sensor is mounted directly above the inlet, floating debris also reflects the ultrasonic pulse back sooner — giving a falsely high reading that triggers an alert. A blockage caught in dry weather is easy to clear. During a storm it becomes a Section 19 investigation.</p>
+        <div class="detail-specs">
+          <span class="spec-pill spec-amber">Anomalous rate-of-rise</span>
+          <span class="spec-pill spec-amber">Debris surface reflection</span>
+          <span class="spec-pill spec-amber">Dry-weather trigger</span>
+        </div>
+      </div>
+
+      <div class="detection-card dual">
+        <div>
+          <div class="detection-card-title" style="margin-bottom:8px;">Optional extension: upstream + downstream sensors</div>
+          <p class="detection-card-body" style="margin-bottom:20px;">Adding a second sensor downstream allows direct flow differential measurement. If upstream is rising but downstream is not, the culvert is blocked. This gives maintenance teams a precise, actionable signal even without rainfall context.</p>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; align-self:start;">
+          <div>
+            <div class="dual-col-title pro">Benefits</div>
+            <ul class="dual-list">
+              <li>Unambiguous blockage confirmation</li>
+              <li>Flow rate estimation across culvert</li>
+              <li>Richer dataset for ML model training</li>
+              <li>Useful even in dry conditions</li>
+            </ul>
+          </div>
+          <div>
+            <div class="dual-col-title con">Tradeoffs</div>
+            <ul class="dual-list">
+              <li>Two installation points per site</li>
+              <li>Two potential failure points to maintain</li>
+              <li>Downstream access can be difficult</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROI / SAVINGS -->
+<section class="roi">
+  <div class="roi-inner">
+    <div class="roi-header">
+      <div>
+        <span class="section-tag">Return on Investment</span>
+        <h2 class="section-title">The cost of one flood event<br>dwarfs a decade of monitoring.</h2>
+      </div>
+      <p class="section-body roi-body">A single avoided callout nearly covers two full years of monitoring.</p>
+    </div>
+
+    <div class="roi-costs">
+      <div class="pricing-card">
+        <div class="pricing-card-header">
+          <span class="cost-label">Gateway installation</span>
+          <span class="cost-val">£1,500</span>
+        </div>
+        <p class="pricing-card-desc">One-time fee. Covers site survey, gateway hardware, mounting, configuration and commissioning. One gateway typically covers a 2–5km radius.</p>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-card-header">
+          <span class="cost-label">Per node deployed</span>
+          <span class="cost-val">£300</span>
+        </div>
+        <p class="pricing-card-desc">One-time per node. Includes sensor hardware, installation and configuration. Up to 50 nodes per gateway — additional gateways available for larger networks.</p>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-card-header">
+          <span class="cost-label">Annual managed service</span>
+          <span class="cost-val">£1,500/node/year</span>
+        </div>
+        <p class="pricing-card-desc">Per node per year. Covers platform access, real-time alerts, data storage, remote monitoring and an annual site visit.</p>
+      </div>
+      <div style="background:rgba(74,155,196,0.06); border:1px solid rgba(74,155,196,0.15); border-radius:10px; padding:16px 20px;">
+        <p style="font-size:13px; color:rgba(255,255,255,0.55); font-weight:300; line-height:1.65;">A typical 5-node deployment: £3,000 to deploy, then £7,500/year. Three avoided callouts per year covers the cost in full.<sup class="cite">*</sup></p>
+      </div>
+      <p class="roi-cite"><sup>*</sup> Average gully clean and road closure cost: £2,500 — South London Partnership InnOvaTe Programme, 2023</p>
+    </div>
+  </div>
+</section>
+
+<!-- PILOT / PRICING -->
+<section class="pilot" id="pilot">
+  <div class="pilot-inner">
+    <div class="pilot-header">
+      <div>
+        <span class="section-tag">Pilot Programme</span>
+        <h2 class="section-title">Low risk.<br>Measurable outcomes.</h2>
+      </div>
+      <p class="section-body pilot-body">We are now accepting applications from Lead Local Flood Authorities in England for the first pilot cohort. The programme is structured in three stages, each evidence-gated before committing to the next. No operational dependency is required at any stage.</p>
+    </div>
+    <div class="phases">
+      <div class="phase">
+        <span class="phase-num">1</span>
+        <div class="phase-title">Proof of concept</div>
+        <p class="phase-body">We start with a site survey to identify the best candidate culverts in your area. We then install one sensor node at a priority location. Data streams to a shared dashboard with simple threshold alerts. We handle everything — installation, configuration and monitoring. No operational dependency; data is advisory only.</p>
+        <div style="margin-top:16px; margin-bottom:4px; font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.3);">Success looks like</div>
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:7px; margin-bottom:16px;">
+          <li style="font-size:13px; color:rgba(255,255,255,0.5); padding-left:14px; position:relative;"><span style="position:absolute;left:0;color:rgba(255,255,255,0.2);">—</span>No hardware failures over the proof-of-concept period</li>
+          <li style="font-size:13px; color:rgba(255,255,255,0.5); padding-left:14px; position:relative;"><span style="position:absolute;left:0;color:rgba(255,255,255,0.2);">—</span>Readings consistent with site visual inspections</li>
+          <li style="font-size:13px; color:rgba(255,255,255,0.5); padding-left:14px; position:relative;"><span style="position:absolute;left:0;color:rgba(255,255,255,0.2);">—</span>At least one rainfall event captured and logged</li>
+          <li style="font-size:13px; color:rgba(255,255,255,0.5); padding-left:14px; position:relative;"><span style="position:absolute;left:0;color:rgba(255,255,255,0.2);">—</span>Alert fires correctly when water level rises</li>
+          <li style="font-size:13px; color:rgba(255,255,255,0.5); padding-left:14px; position:relative;"><span style="position:absolute;left:0;color:rgba(255,255,255,0.2);">—</span>Battery life exceeds 3 months in field conditions</li>
+        </ul>
+        <div class="phase-cost">£2,500 all-in — includes site survey, gateway, one sensor node, installation, configuration and 12 months platform access. No further commitment required.</div>
+      </div>
+      <div class="phase">
+        <span class="phase-num">2</span>
+        <div class="phase-title">Multi-site expansion</div>
+        <p class="phase-body">Following a successful pilot, expand monitoring to your priority culvert network. Each additional node deploys in half a day. One gateway typically covers 10–15 culverts within a 2–5km radius. Data from multiple sites feeds a single dashboard, enabling your team to see catchment-level patterns and prioritise maintenance across your monitored network.</p>
+        <div class="phase-cost">£300/node deployed. £1,500/node/year.</div>
+      </div>
+      <div class="phase">
+        <span class="phase-num">3</span>
+        <div class="phase-title">Predictive intelligence</div>
+        <p class="phase-body">As your sensor network matures, we are developing predictive capabilities — correlating water level trends with Met Office rainfall forecasts to alert your team before levels begin to rise, not just when they do. This is on our development roadmap and available to pilot partners as it develops.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <h2 class="contact-title">Request a pilot</h2>
+  <p class="contact-sub">Tell us about your council and your priority culverts. We'll confirm if it's a good fit and outline the next steps. No commitment required.</p>
+
+  <form class="contact-form" action="mailto:james@culvertsense.com" method="GET" enctype="text/plain" onsubmit="handleSubmit(event)">
+    <div class="form-row">
+      <div class="form-field">
+        <label for="f-name">Your name</label>
+        <input type="text" id="f-name" name="name" placeholder="Jane Smith" autocomplete="name">
+      </div>
+      <div class="form-field">
+        <label for="f-role">Role</label>
+        <input type="text" id="f-role" name="role" placeholder="Flood Risk Manager">
+      </div>
+    </div>
+    <div class="form-field">
+      <label for="f-council">Council / authority</label>
+      <input type="text" id="f-council" name="council" placeholder="e.g. Lincolnshire County Council">
+    </div>
+    <div class="form-field">
+      <label for="f-email">Work email</label>
+      <input type="email" id="f-email" name="email" placeholder="jane.smith@lincs.gov.uk" autocomplete="email">
+    </div>
+    <div class="form-field">
+      <label for="f-sites">Number of candidate culvert sites</label>
+      <select id="f-sites" name="sites">
+        <option value="" disabled selected>Select an estimate</option>
+        <option value="1">1 — single proof of concept</option>
+        <option value="2-5">2–5 sites</option>
+        <option value="6-15">6–15 sites</option>
+        <option value="15+">15+ sites</option>
+        <option value="unsure">Not sure yet</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label for="f-message">Anything else?</label>
+      <textarea id="f-message" name="message" placeholder="Known problem culverts, preferred timeline, questions about the technology…"></textarea>
+    </div>
+    <button type="submit" class="form-submit">Send request</button>
+  </form>
+
+  <p class="contact-alt">Or email directly: <a href="mailto:james@culvertsense.com">james@culvertsense.com</a></p>
+</section>
+
+<footer>
+  <div class="logo">Culvert<span>Sense</span></div>
+  <div class="footer-right">
+    <p class="footer-legal">CulvertSense Ltd · Registered in England and Wales</p>
+    <p class="footer-legal">Lead Local Flood Authority monitoring solutions</p>
+  </div>
+</footer>
+
+<script>
+  /* Node detail switcher */
+  window.showDetail = function(i) {
+    document.querySelectorAll('.detail-content').forEach(function(d) { d.classList.remove('active'); });
+    document.querySelectorAll('.node-item').forEach(function(n) { n.classList.remove('active'); });
+    document.getElementById('detail-' + i).classList.add('active');
+    document.querySelectorAll('.node-item')[i].classList.add('active');
+  };
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.node-item').forEach(function(el, i) {
+      el.addEventListener('click', function() { window.showDetail(i); });
+    });
+  });
+
+  /* Smooth scroll */
+  document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      e.preventDefault();
+      var target = document.querySelector(a.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  /* Scroll-in animations */
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fact-card, .compare-card, .phase, .cost-row, .detection-card').forEach(function(el) {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(16px)';
+    el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    observer.observe(el);
+  });
+
+  /* Contact form — graceful fallback to mailto */
+  window.handleSubmit = function(e) {
+    e.preventDefault();
+    var name    = document.getElementById('f-name').value;
+    var role    = document.getElementById('f-role').value;
+    var council = document.getElementById('f-council').value;
+    var email   = document.getElementById('f-email').value;
+    var sites   = document.getElementById('f-sites').value;
+    var message = document.getElementById('f-message').value;
+
+    var subject = encodeURIComponent('CulvertSense pilot request — ' + (council || 'Council'));
+    var body = encodeURIComponent(
+      'Name: ' + name + '\n' +
+      'Role: ' + role + '\n' +
+      'Council: ' + council + '\n' +
+      'Email: ' + email + '\n' +
+      'Sites: ' + sites + '\n\n' +
+      message
+    );
+
+    window.location.href = 'mailto:james@culvertsense.com?subject=' + subject + '&body=' + body;
+  };
+</script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+# ChirpStack Gateway Bridge v4 — Basics Station backend
+# Full reference: https://www.chirpstack.io/docs/chirpstack-gateway-bridge/configuration.html
+
+[general]
+  log_level = "info"
+
+[backend]
+  type = "basicstation"
+
+  [backend.basicstation]
+    bind = "0.0.0.0:3001"
+
+    # Set to true and configure tls_cert/tls_key for WSS (recommended in production)
+    tls_cert = ""
+    tls_key  = ""
+    ca_cert  = ""
+
+    ping_interval = "1m0s"
+    read_timeout  = "1m5s"
+    write_timeout = "1s"
+
+    # Region frequencies sent to the gateway on connect
+    region = "EU868"
+    frequency_min = 863000000
+    frequency_max = 870000000
+
+[integration]
+  marshaler = "protobuf"
+
+  [integration.mqtt]
+    event_topic_template   = "eu868/gateway/{{ .GatewayID }}/event/{{ .EventType }}"
+    state_topic_template   = "eu868/gateway/{{ .GatewayID }}/state/{{ .StateType }}"
+    command_topic_template = "eu868/gateway/{{ .GatewayID }}/command/#"
+    server                 = "tcp://mosquitto:1883"
+    qos                    = 0
+    clean_session          = true
+    client_id              = ""
+    keepalive_interval     = "30s"

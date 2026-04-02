@@ -7,7 +7,7 @@ variable "resource_group_name" {
 variable "location" {
   description = "Azure region"
   type        = string
-  default     = "canadaeast"
+  default     = "uksouth"
 }
 
 variable "vm_name" {
@@ -35,9 +35,22 @@ variable "admin_ssh_public_key" {
 }
 
 variable "my_ip_cidr" {
-  description = "Your egress IP in CIDR notation, used to restrict SSH access (e.g. '203.0.113.10/32')"
+  description = "Your egress IP in CIDR notation, used to restrict SSH access (e.g. '203.0.113.10/32' or '2001:db8::1/128')"
   type        = string
   # Pass via TF_VAR_my_ip_cidr or a tfvars file.
+}
+
+variable "my_ip_cidr_v4" {
+  description = "Legacy IPv4 egress IP in CIDR notation — kept as a fallback SSH rule while IPv6 connectivity is confirmed"
+  type        = string
+  default     = ""
+  # Set to empty string to disable. Pass via TF_VAR_my_ip_cidr_v4 or a tfvars file.
+}
+
+variable "gateway_ip_cidr" {
+  description = "Egress IP of the RAK gateway (home network) in CIDR notation — used to allow Basics Station WebSocket on port 3001"
+  type        = string
+  # Pass via TF_VAR_gateway_ip_cidr or a tfvars file. Use /128 for a single IPv6 host or widen to /56 if the gateway source IP varies.
 }
 
 variable "data_disk_size_gb" {

@@ -1,4 +1,9 @@
 ###############################################################################
+# Current Azure client (needed for Key Vault access policy / RBAC)
+###############################################################################
+data "azurerm_client_config" "current" {}
+
+###############################################################################
 # Resource group
 ###############################################################################
 resource "azurerm_resource_group" "main" {
@@ -47,6 +52,19 @@ resource "azurerm_network_security_group" "main" {
     destination_address_prefix = "*"
   }
 
+  # SSH fallback — legacy IPv4 address kept until IPv6 SSH is confirmed working
+  security_rule {
+    name                       = "allow-ssh-v4-fallback"
+    priority                   = 101
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = var.my_ip_cidr_v4
+    destination_address_prefix = "*"
+  }
+
   # HTTPS — public
   security_rule {
     name                       = "allow-https"
@@ -60,7 +78,7 @@ resource "azurerm_network_security_group" "main" {
     destination_address_prefix = "*"
   }
 
-  # ChirpStack / application API — public
+  # ChirpStack gRPC API — restricted to operator IP only (never expose publicly)
   security_rule {
     name                       = "allow-app-api"
     priority                   = 120
@@ -69,7 +87,59 @@ resource "azurerm_network_security_group" "main" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "3001"
-    source_address_prefix      = "*"
+    source_address_prefix      = var.my_ip_cidr
+    destination_address_prefix = "*"
+  }
+
+  # ChirpStack Basics Station WebSocket — RAK gateway inbound on port 3001 (IPv6)
+  security_rule {
+    name                       = "allow-basics-station"
+    priority                   = 125
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3001"
+    source_address_prefix      = var.gateway_ip_cidr
+    destination_address_prefix = "*"
+  }
+
+  # ChirpStack Basics Station WebSocket — RAK gateway inbound on port 3001 (IPv4 fallback)
+  security_rule {
+    name                       = "allow-basics-station-v4"
+    priority                   = 126
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "3001"
+    source_address_prefix      = var.my_ip_cidr_v4
+    destination_address_prefix = "*"
+  }
+
+  # ChirpStack web UI — restricted to operator IP only
+  security_rule {
+    name                       = "allow-chirpstack-ui"
+    priority                   = 130
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "8443"
+    source_address_prefix      = var.my_ip_cidr
+    destination_address_prefix = "*"
+  }
+
+  # ChirpStack web UI fallback — legacy IPv4 address kept until IPv6 is confirmed working
+  security_rule {
+    name                       = "allow-chirpstack-ui-v4-fallback"
+    priority                   = 131
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "8443"
+    source_address_prefix      = var.my_ip_cidr_v4
     destination_address_prefix = "*"
   }
 
@@ -143,6 +213,11 @@ resource "azurerm_linux_virtual_machine" "main" {
     azurerm_network_interface.main.id,
   ]
 
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.vm.id]
+  }
+
   admin_ssh_key {
     username   = var.admin_username
     public_key = var.admin_ssh_public_key
@@ -185,4 +260,105 @@ resource "azurerm_virtual_machine_data_disk_attachment" "data" {
   virtual_machine_id = azurerm_linux_virtual_machine.main.id
   lun                = 0
   caching            = "ReadWrite"
+}
+
+###############################################################################
+# User-assigned managed identity for the VM
+# (Preferred over system-assigned so principal_id is resolvable at plan time)
+###############################################################################
+resource "azurerm_user_assigned_identity" "vm" {
+  name                = "${var.vm_name}-identity"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  tags                = var.tags
+}
+
+###############################################################################
+# Key Vault
+###############################################################################
+resource "azurerm_key_vault" "main" {
+  name                        = "${var.vm_name}-kv"
+  location                    = azurerm_resource_group.main.location
+  resource_group_name         = azurerm_resource_group.main.name
+  tenant_id                   = data.azurerm_client_config.current.tenant_id
+  sku_name                    = "standard"
+  soft_delete_retention_days  = 7
+  purge_protection_enabled    = false
+  enable_rbac_authorization   = true
+  tags                        = var.tags
+}
+
+# Allow the operator (Terraform runner) to manage secrets
+resource "azurerm_role_assignment" "kv_operator_admin" {
+  scope                = azurerm_key_vault.main.id
+  role_definition_name = "Key Vault Administrator"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+# Allow the VM's managed identity to read secrets
+# time_sleep gives RBAC a moment to propagate before we create secrets
+resource "time_sleep" "rbac_propagation" {
+  depends_on      = [azurerm_role_assignment.kv_operator_admin]
+  create_duration = "30s"
+}
+
+resource "azurerm_role_assignment" "kv_vm_secrets_user" {
+  scope                = azurerm_key_vault.main.id
+  role_definition_name = "Key Vault Secrets User"
+  principal_id         = azurerm_user_assigned_identity.vm.principal_id
+}
+
+###############################################################################
+# Generated secrets
+###############################################################################
+resource "random_password" "postgres" {
+  length           = 32
+  special          = false
+}
+
+resource "random_password" "chirpstack_api_secret" {
+  length           = 44
+  special          = true
+  override_special = "+/="
+}
+
+resource "random_password" "influxdb_admin_password" {
+  length  = 32
+  special = false
+}
+
+resource "random_password" "influxdb_admin_token" {
+  length  = 64
+  special = false
+}
+
+###############################################################################
+# Key Vault secrets
+###############################################################################
+resource "azurerm_key_vault_secret" "postgres_password" {
+  name         = "postgres-password"
+  value        = random_password.postgres.result
+  key_vault_id = azurerm_key_vault.main.id
+  depends_on   = [time_sleep.rbac_propagation]
+}
+
+resource "azurerm_key_vault_secret" "chirpstack_api_secret" {
+  name         = "chirpstack-api-secret"
+  value        = random_password.chirpstack_api_secret.result
+  key_vault_id = azurerm_key_vault.main.id
+  depends_on   = [time_sleep.rbac_propagation]
+}
+
+resource "azurerm_key_vault_secret" "influxdb_admin_password" {
+  name         = "influxdb-admin-password"
+  value        = random_password.influxdb_admin_password.result
+  key_vault_id = azurerm_key_vault.main.id
+  depends_on   = [time_sleep.rbac_propagation]
+}
+
+resource "azurerm_key_vault_secret" "influxdb_admin_token" {
+  name         = "influxdb-admin-token"
+  value        = random_password.influxdb_admin_token.result
+  key_vault_id = azurerm_key_vault.main.id
+  depends_on   = [time_sleep.rbac_propagation]
 }

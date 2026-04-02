@@ -93,11 +93,12 @@ services:
     restart: unless-stopped
     command: ["-c", "/etc/chirpstack"]
     volumes:
-      - ./config/chirpstack:/etc/chirpstack:ro
+      - ./config/chirpstack:/etc/chirpstack
       - chirpstack-certs:/etc/chirpstack/certs
     environment:
       POSTGRESQL__DSN: "postgres://${POSTGRES_USER:-chirpstack}:${POSTGRES_PASSWORD}@postgres/chirpstack?sslmode=disable"
       REDIS__SERVER: "redis:6379"
+      API__SECRET: ${CHIRPSTACK_API_SECRET:?CHIRPSTACK_API_SECRET is required}
     depends_on:
       postgres:
         condition: service_healthy
@@ -115,15 +116,11 @@ services:
   # ChirpStack Gateway Bridge — Basics Station
   ###########################################################################
   chirpstack-gateway-bridge:
-    image: chirpstack/chirpstack-gateway-bridge:4.0.11
+    image: chirpstack/chirpstack-gateway-bridge:4.1.1
     restart: unless-stopped
+    command: ["-c", "/etc/chirpstack-gateway-bridge/chirpstack-gateway-bridge.toml"]
     volumes:
       - ./config/chirpstack-gateway-bridge:/etc/chirpstack-gateway-bridge:ro
-    environment:
-      INTEGRATION__MQTT__EVENT_TOPIC_TEMPLATE: "eu868/gateway/{{ .GatewayID }}/event/{{ .EventType }}"
-      INTEGRATION__MQTT__STATE_TOPIC_TEMPLATE: "eu868/gateway/{{ .GatewayID }}/state/{{ .StateType }}"
-      INTEGRATION__MQTT__COMMAND_TOPIC_TEMPLATE: "eu868/gateway/{{ .GatewayID }}/command/#"
-      INTEGRATION__MQTT__SERVER: "tcp://mosquitto:1883"
     ports:
       # Basics Station WebSocket endpoint — reachable from the gateway
       - "3001:3001"
@@ -198,10 +195,11 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "8443:8443"
     volumes:
       - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./config/nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./config/nginx/certs:/etc/nginx/certs:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - chirpstack
       - api

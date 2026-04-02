@@ -2,10 +2,10 @@
 # Full reference: https://www.chirpstack.io/docs/chirpstack-gateway-bridge/configuration.html
 
 [general]
-  log_level = "info"
+  log_level = 4
 
 [backend]
-  type = "basicstation"
+  type = "basic_station"
 
   [backend.basicstation]
     bind = "0.0.0.0:3001"
@@ -24,6 +24,39 @@
     frequency_min = 863000000
     frequency_max = 870000000
 
+    # RAK7289CV2 (SX1302) EU868 concentrator channel plan.
+    # Populates sx1301_conf in router_config — required by WisGateOS2 firmware
+    # to configure the concentrator. Without this the gateway loops on normal
+    # close (code 1000) after every router_config.
+    [[backend.basic_station.concentrators]]
+
+      [backend.basic_station.concentrators.multi_sf]
+      frequencies = [
+        868100000,
+        868300000,
+        868500000,
+        867100000,
+        867300000,
+        867500000,
+        867700000,
+        867900000,
+      ]
+
+      [backend.basic_station.concentrators.lora_std]
+      frequency       = 868300000
+      bandwidth       = 250000
+      spreading_factor = 7
+
+      [backend.basic_station.concentrators.fsk]
+      frequency = 868800000
+
+[filters]
+  # NetID must be set (not null) — some RAK WisGateOS2 firmware rejects null NetID
+  # and sends a WebSocket close frame immediately after router_config.
+  # "000000" is the standard private LoRa network NetID matching chirpstack.toml.
+  net_ids = ["000000"]
+  join_euis = []
+
 [integration]
   marshaler = "protobuf"
 
@@ -31,8 +64,9 @@
     event_topic_template   = "eu868/gateway/{{ .GatewayID }}/event/{{ .EventType }}"
     state_topic_template   = "eu868/gateway/{{ .GatewayID }}/state/{{ .StateType }}"
     command_topic_template = "eu868/gateway/{{ .GatewayID }}/command/#"
-    server                 = "tcp://mosquitto:1883"
-    qos                    = 0
-    clean_session          = true
-    client_id              = ""
-    keepalive_interval     = "30s"
+
+    [integration.mqtt.auth]
+      type = "generic"
+
+      [integration.mqtt.auth.generic]
+        servers = ["tcp://mosquitto:1883"]

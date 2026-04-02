@@ -17,3 +17,13 @@ output "data_disk_id" {
   description = "Azure resource ID of the attached managed data disk"
   value       = azurerm_managed_disk.data.id
 }
+
+output "key_vault_uri" {
+  description = "URI of the Key Vault (used by load-secrets.sh)"
+  value       = azurerm_key_vault.main.vault_uri
+}
+
+output "key_vault_name" {
+  description = "Name of the Key Vault"
+  value       = azurerm_key_vault.main.name
+}

@@ -4,7 +4,7 @@ services:
       context: ../dashboard
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_API_URL: ""
+        NEXT_PUBLIC_API_URL: "https://20.108.184.46/api/v1"
         NEXT_PUBLIC_USE_MOCK_DATA: "false"
     image: culvertsense/dashboard:latest
     restart: unless-stopped

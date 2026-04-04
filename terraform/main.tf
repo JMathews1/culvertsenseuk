@@ -54,15 +54,15 @@ resource "azurerm_network_security_group" "main" {
 
   # SSH fallback — legacy IPv4 address kept until IPv6 SSH is confirmed working
   security_rule {
-    name                       = "allow-ssh-v4-fallback"
-    priority                   = 101
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefix      = var.my_ip_cidr_v4
-    destination_address_prefix = "*"
+    name                        = "allow-ssh-v4-fallback"
+    priority                    = 101
+    direction                   = "Inbound"
+    access                      = "Allow"
+    protocol                    = "Tcp"
+    source_port_range           = "*"
+    destination_port_range      = "22"
+    source_address_prefixes     = var.my_ip_cidr_v4
+    destination_address_prefix  = "*"
   }
 
   # HTTPS — public
@@ -106,15 +106,15 @@ resource "azurerm_network_security_group" "main" {
 
   # ChirpStack Basics Station WebSocket — RAK gateway inbound on port 3001 (IPv4 fallback)
   security_rule {
-    name                       = "allow-basics-station-v4"
-    priority                   = 126
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "3001"
-    source_address_prefix      = var.my_ip_cidr_v4
-    destination_address_prefix = "*"
+    name                        = "allow-basics-station-v4"
+    priority                    = 126
+    direction                   = "Inbound"
+    access                      = "Allow"
+    protocol                    = "Tcp"
+    source_port_range           = "*"
+    destination_port_range      = "3001"
+    source_address_prefixes     = var.my_ip_cidr_v4
+    destination_address_prefix  = "*"
   }
 
   # ChirpStack web UI — restricted to operator IP only
@@ -132,15 +132,15 @@ resource "azurerm_network_security_group" "main" {
 
   # ChirpStack web UI fallback — legacy IPv4 address kept until IPv6 is confirmed working
   security_rule {
-    name                       = "allow-chirpstack-ui-v4-fallback"
-    priority                   = 131
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "8443"
-    source_address_prefix      = var.my_ip_cidr_v4
-    destination_address_prefix = "*"
+    name                        = "allow-chirpstack-ui-v4-fallback"
+    priority                    = 131
+    direction                   = "Inbound"
+    access                      = "Allow"
+    protocol                    = "Tcp"
+    source_port_range           = "*"
+    destination_port_range      = "8443"
+    source_address_prefixes     = var.my_ip_cidr_v4
+    destination_address_prefix  = "*"
   }
 
   # Deny all other inbound traffic (Azure default deny sits at 65500, but
@@ -306,6 +306,41 @@ resource "azurerm_role_assignment" "kv_vm_secrets_user" {
   scope                = azurerm_key_vault.main.id
   role_definition_name = "Key Vault Secrets User"
   principal_id         = azurerm_user_assigned_identity.vm.principal_id
+}
+
+###############################################################################
+# Storage Account — culvert map static assets (GeoJSON + HTML)
+###############################################################################
+resource "azurerm_storage_account" "map" {
+  name                     = "culvertsensemap"
+  resource_group_name      = azurerm_resource_group.main.name
+  location                 = azurerm_resource_group.main.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+  min_tls_version          = "TLS1_2"
+
+  # Serve files directly over HTTPS without needing a CDN
+  static_website {
+    index_document = "culvert_map.html"
+  }
+
+  blob_properties {
+    cors_rule {
+      allowed_headers    = ["*"]
+      allowed_methods    = ["GET", "HEAD"]
+      allowed_origins    = ["https://culvertsense.com", "http://localhost:8765", "http://localhost:3000", "http://127.0.0.1:8765"]
+      exposed_headers    = ["*"]
+      max_age_in_seconds = 3600
+    }
+  }
+
+  tags = var.tags
+}
+
+resource "azurerm_storage_container" "map" {
+  name                  = "map"
+  storage_account_name  = azurerm_storage_account.map.name
+  container_access_type = "blob"   # public read, no list
 }
 
 ###############################################################################

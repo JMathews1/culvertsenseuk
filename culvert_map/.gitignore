@@ -1,0 +1,7 @@
+data/open_rivers/
+data/open_roads/
+data/rofst/
+output/culvert_crossings*.geojson
+__pycache__/
+*.pyc
+.DS_Store

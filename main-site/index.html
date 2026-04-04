@@ -85,6 +85,22 @@
   }
   .logo span { color: var(--water); font-style: italic; }
 
+  .nav-risk-map {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--water);
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(74,155,196,0.4);
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav-risk-map:hover {
+    background: var(--water);
+    color: var(--navy);
+  }
+
   .nav-pill {
     font-family: 'DM Mono', monospace;
     font-size: 11px;
@@ -990,7 +1006,10 @@
 
   <nav>
     <div class="logo">Culvert<span>Sense</span></div>
-    <div class="nav-pill">LEAD LOCAL FLOOD AUTHORITIES · ENGLAND</div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <a href="https://culvertsensemap.z33.web.core.windows.net/culvert_map.html" class="nav-risk-map" target="_blank" rel="noopener">Risk Map</a>
+      <div class="nav-pill">LEAD LOCAL FLOOD AUTHORITIES · ENGLAND</div>
+    </div>
   </nav>
 
   <div class="hero-content">

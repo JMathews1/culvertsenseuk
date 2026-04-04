@@ -41,10 +41,10 @@ variable "my_ip_cidr" {
 }
 
 variable "my_ip_cidr_v4" {
-  description = "Legacy IPv4 egress IP in CIDR notation — kept as a fallback SSH rule while IPv6 connectivity is confirmed"
-  type        = string
-  default     = ""
-  # Set to empty string to disable. Pass via TF_VAR_my_ip_cidr_v4 or a tfvars file.
+  description = "List of legacy IPv4 egress IPs in CIDR notation — kept as fallback rules while IPv6 connectivity is confirmed"
+  type        = list(string)
+  default     = []
+  # Pass via TF_VAR_my_ip_cidr_v4 or a tfvars file.
 }
 
 variable "gateway_ip_cidr" {

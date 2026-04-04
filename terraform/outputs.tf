@@ -27,3 +27,33 @@ output "key_vault_name" {
   description = "Name of the Key Vault"
   value       = azurerm_key_vault.main.name
 }
+
+output "map_storage_account_name" {
+  description = "Storage account name for the culvert map"
+  value       = azurerm_storage_account.map.name
+}
+
+output "map_url" {
+  description = "Public URL of the culvert map (static website endpoint)"
+  value       = "${azurerm_storage_account.map.primary_web_endpoint}culvert_map.html"
+}
+
+output "map_upload_command" {
+  description = "az CLI command to upload/update the map files"
+  value       = <<-EOT
+    az storage blob upload-batch \
+      --account-name ${azurerm_storage_account.map.name} \
+      --destination '$web' \
+      --source culvert_map/output \
+      --pattern "culvert_map.html" \
+      --overwrite
+
+    az storage blob upload-batch \
+      --account-name ${azurerm_storage_account.map.name} \
+      --destination '$web' \
+      --source culvert_map/output \
+      --pattern "culvert_crossings.geojson" \
+      --content-type "application/geo+json" \
+      --overwrite
+  EOT
+}

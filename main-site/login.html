@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Council login · CulvertSense</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #0d1f2d;
+    --ocean:  #1a3a52;
+    --water:  #4a9bc4;
+    --foam:   #a8d4e8;
+    --white:  #ffffff;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+  }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    background: linear-gradient(160deg, #0d1f2d 0%, #1a3a52 45%, #0d2a3e 100%);
+  }
+
+  .card {
+    max-width: 520px;
+    width: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .logo {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    color: var(--white);
+  }
+  .logo span { color: var(--water); font-style: italic; }
+
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--water);
+    text-transform: uppercase;
+    border: 1px solid rgba(74,155,196,0.3);
+    padding: 6px 16px;
+    border-radius: 20px;
+    display: inline-block;
+  }
+
+  h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(28px, 5vw, 44px);
+    line-height: 1.1;
+    letter-spacing: -1px;
+  }
+
+  p {
+    font-size: 16px;
+    line-height: 1.75;
+    color: rgba(255,255,255,0.6);
+    font-weight: 300;
+    max-width: 440px;
+  }
+
+  .btn {
+    background: var(--water);
+    color: var(--navy);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 14px 28px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+    display: inline-block;
+  }
+  .btn:hover { background: var(--foam); transform: translateY(-1px); }
+  .btn:focus-visible { outline: 2px solid var(--foam); outline-offset: 3px; }
+
+  .back {
+    font-size: 13px;
+    color: rgba(168,212,232,0.5);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .back:hover { color: var(--foam); }
+  .back:focus-visible { outline: 2px solid var(--water); outline-offset: 3px; border-radius: 3px; }
+
+  .divider {
+    width: 40px;
+    height: 1px;
+    background: rgba(74,155,196,0.2);
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <a href="/" class="logo" aria-label="CulvertSense home">Culvert<span>Sense</span></a>
+    <span class="tag">Council dashboard</span>
+    <h1>Coming soon</h1>
+    <p>We're building a secure dashboard for councils to access their culvert risk data, monitoring feeds, and alert history. If you'd like early access or a preview of your council's dataset, get in touch.</p>
+    <a href="mailto:james@culvertsense.com?subject=Council%20dashboard%20access%20%E2%80%94%20%5Bcouncil%20name%5D" class="btn">Contact us</a>
+    <div class="divider"></div>
+    <a href="/" class="back">&#8592; Back to homepage</a>
+  </div>
+</body>
+</html>

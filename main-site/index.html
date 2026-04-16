@@ -85,31 +85,19 @@
   }
   .logo span { color: var(--water); font-style: italic; }
 
-  .nav-risk-map {
+  .nav-login {
     font-family: 'DM Sans', sans-serif;
     font-size: 13px;
-    font-weight: 500;
-    color: var(--water);
+    font-weight: 400;
+    color: rgba(168,212,232,0.75);
     text-decoration: none;
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: 1px solid rgba(74,155,196,0.4);
-    transition: background 0.2s, color 0.2s;
+    transition: color 0.2s;
+    outline-offset: 4px;
   }
-  .nav-risk-map:hover {
-    background: var(--water);
-    color: var(--navy);
-  }
-
-  .nav-pill {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    color: var(--foam);
-    background: rgba(74,155,196,0.12);
-    border: 1px solid rgba(74,155,196,0.25);
-    padding: 6px 14px;
-    border-radius: 20px;
+  .nav-login:hover { color: var(--foam); }
+  .nav-login:focus-visible {
+    outline: 2px solid var(--water);
+    border-radius: 3px;
   }
 
   .hero-content {
@@ -923,17 +911,8 @@
   }
 
   @media (max-width: 480px) {
-    /* Nav: allow pill to wrap below logo and shrink font */
     nav {
-      flex-wrap: wrap;
-      gap: 10px;
       padding: 16px 20px;
-      align-items: flex-start;
-    }
-    .nav-pill {
-      font-size: 9px;
-      letter-spacing: 0.05em;
-      padding: 5px 10px;
     }
 
     /* Hero stats: stack vertically, swap border direction */
@@ -1007,6 +986,7 @@
 
   <nav>
     <div class="logo">Culvert<span>Sense</span></div>
+    <a href="/login" class="nav-login">Council login</a>
   </nav>
 
   <div class="hero-content">

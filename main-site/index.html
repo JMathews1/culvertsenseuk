@@ -573,7 +573,7 @@
     position: relative;
   }
 
-  .dual-list li::before { content: '—'; position: absolute; left: 0; color: rgba(255,255,255,0.2); }
+  .dual-list li::before { content: '–'; position: absolute; left: 0; color: rgba(255,255,255,0.2); }
 
   /* ── ROI SECTION ── */
   .roi {
@@ -1124,7 +1124,7 @@
   <div class="hero-content">
     <span class="hero-tag">LoRaWAN · Early Warning · Culvert Register</span>
     <h1 class="hero-title">Know before<br>it <em>floods.</em></h1>
-    <p class="hero-sub">Real-time culvert monitoring for UK councils. Continuous water-level sensors give operations teams early warning before overtopping — not a phone call after the road closes.</p>
+    <p class="hero-sub">Real-time culvert monitoring for UK councils. Continuous water-level sensors give operations teams early warning before overtopping, not a phone call after the road closes.</p>
     <div class="hero-ctas">
       <a href="#system" class="btn-primary">See how it works</a>
       <a href="#contact" class="btn-ghost">Request a pilot</a>
@@ -1149,7 +1149,7 @@
         <div class="fact-card"><span class="num">S.19</span><p>Section 19 investigations required after significant flood events: continuous data supports your statutory duty</p></div>
         <div class="fact-card"><span class="num">2-yearly</span><p>Typical reactive inspection cycle for culverts. Blocked inlets can fill silently between visits</p></div>
         <div class="fact-card"><span class="num">£2,500</span><p>Average cost of a gully clean and road closure following a culvert-related blockage incident</p></div>
-        <div class="fact-card"><span class="num">152</span><p>LLFAs — Lead Local Flood Authorities in England, each with a statutory duty to manage flood risk from ordinary watercourses and culverts</p></div>
+        <div class="fact-card"><span class="num">152</span><p>LLFAs: Lead Local Flood Authorities in England, each with a statutory duty to manage flood risk from ordinary watercourses and culverts</p></div>
       </div>
     </div>
     <div class="flood-visual">
@@ -1292,7 +1292,7 @@
         <span class="section-tag">The Register</span>
         <h2 class="section-title">No register?<br>Start with 27,000 crossings.</h2>
       </div>
-      <p class="section-body" style="color:rgba(255,255,255,0.6);">Most LLFAs have no culvert inventory. We've built one — pre-populated from open data, risk-scored, and filtered to your authority area.</p>
+      <p class="section-body" style="color:rgba(255,255,255,0.6);">Most LLFAs have no culvert inventory. We've built one, pre-populated from open data, risk-scored, and filtered to your authority area.</p>
     </div>
 
     <p class="register-body">We cross-reference OS Open Roads, OS Open Rivers, the EA Flood Map for Planning, recorded flood outlines, Section 19 investigation areas, EA Main Rivers, and IDB boundaries to identify every probable road–watercourse crossing in England. The output is a structured register of approximately 27,000 culverts, each one scored and prioritised so your team knows where to look first.</p>
@@ -1300,7 +1300,7 @@
     <div class="fact-cards">
       <div class="fact-card">
         <span class="num">~27,000</span>
-        <p>probable crossings identified across England — the first structured starting point for councils with no existing register.</p>
+        <p>probable crossings identified across England. The first structured starting point for councils with no existing register.</p>
       </div>
       <div class="fact-card">
         <span class="num">Risk-scored</span>
@@ -1442,7 +1442,7 @@
       <div class="detection-card">
         <span class="section-tag" style="color:rgba(255,180,100,0.8); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; margin-bottom:12px; display:block;">Blockage detection</span>
         <div class="detection-card-title">Water rising faster than rain explains</div>
-        <p class="detection-card-body">When debris blocks the culvert inlet, water backs up faster than rainfall alone would predict. If the sensor is mounted directly above the inlet, floating debris also reflects the ultrasonic pulse back sooner — giving a falsely high reading that triggers an alert. A blockage caught in dry weather is easy to clear. During a storm it becomes a Section 19 investigation.</p>
+        <p class="detection-card-body">When debris blocks the culvert inlet, water backs up faster than rainfall alone would predict. If the sensor is mounted directly above the inlet, floating debris also reflects the ultrasonic pulse back sooner, giving a falsely high reading that triggers an alert. A blockage caught in dry weather is easy to clear. During a storm it becomes a Section 19 investigation.</p>
         <div class="detail-specs">
           <span class="spec-pill spec-amber">Anomalous rate-of-rise</span>
           <span class="spec-pill spec-amber">Debris surface reflection</span>
@@ -1506,14 +1506,14 @@
       <div class="phase">
         <span class="phase-num">1</span>
         <div class="phase-title">Proof of concept</div>
-        <p class="phase-body">We start with your prioritised crossings from the culvert register and survey the top candidates on the ground. We then install one sensor node at a priority location. Data streams to a shared dashboard with simple threshold alerts. We handle everything — installation, configuration and monitoring. No operational dependency; data is advisory only.</p>
+        <p class="phase-body">We start with your prioritised crossings from the culvert register and survey the top candidates on the ground. We then install one sensor node at a priority location. Data streams to a shared dashboard with simple threshold alerts. We handle everything: installation, configuration and monitoring. No operational dependency; data is advisory only.</p>
         <div style="margin-top:16px; margin-bottom:4px; font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.3);">Success looks like</div>
         <ul style="list-style:none; display:flex; flex-direction:column; gap:7px; margin-bottom:16px;">
-          <li style="font-size:13px; color:rgba(255,255,255,0.5); padding-left:14px; position:relative;"><span style="position:absolute;left:0;color:rgba(255,255,255,0.2);">—</span>No hardware failures over the proof-of-concept period</li>
-          <li style="font-size:13px; color:rgba(255,255,255,0.5); padding-left:14px; position:relative;"><span style="position:absolute;left:0;color:rgba(255,255,255,0.2);">—</span>Readings consistent with site visual inspections</li>
-          <li style="font-size:13px; color:rgba(255,255,255,0.5); padding-left:14px; position:relative;"><span style="position:absolute;left:0;color:rgba(255,255,255,0.2);">—</span>At least one rainfall event captured and logged</li>
-          <li style="font-size:13px; color:rgba(255,255,255,0.5); padding-left:14px; position:relative;"><span style="position:absolute;left:0;color:rgba(255,255,255,0.2);">—</span>Alert fires correctly when water level rises</li>
-          <li style="font-size:13px; color:rgba(255,255,255,0.5); padding-left:14px; position:relative;"><span style="position:absolute;left:0;color:rgba(255,255,255,0.2);">—</span>Battery life exceeds 3 months in field conditions</li>
+          <li style="font-size:13px; color:rgba(255,255,255,0.5);">No hardware failures over the proof-of-concept period</li>
+          <li style="font-size:13px; color:rgba(255,255,255,0.5);">Readings consistent with site visual inspections</li>
+          <li style="font-size:13px; color:rgba(255,255,255,0.5);">At least one rainfall event captured and logged</li>
+          <li style="font-size:13px; color:rgba(255,255,255,0.5);">Alert fires correctly when water level rises</li>
+          <li style="font-size:13px; color:rgba(255,255,255,0.5);">Battery life exceeds 3 months in field conditions</li>
         </ul>
       </div>
       <div class="phase">
@@ -1524,7 +1524,7 @@
       <div class="phase">
         <span class="phase-num">3</span>
         <div class="phase-title">Predictive intelligence</div>
-        <p class="phase-body">As your sensor network matures, we are developing predictive capabilities — correlating water level trends with Met Office rainfall forecasts to alert your team before levels begin to rise, not just when they do. This is on our development roadmap and available to pilot partners as it develops.</p>
+        <p class="phase-body">As your sensor network matures, we are developing predictive capabilities by correlating water level trends with Met Office rainfall forecasts to alert your team before levels begin to rise, not just when they do. This is on our development roadmap and available to pilot partners as it develops.</p>
       </div>
     </div>
 
@@ -1540,7 +1540,7 @@
     <div class="form-success-card">
       <div class="form-success-icon">✓</div>
       <h3 class="form-success-title">Request sent</h3>
-      <p class="form-success-body">Thanks — we'll review your details and be in touch shortly. If you have any urgent questions, email <a href="mailto:james@culvertsense.com" style="color:var(--water)">james@culvertsense.com</a> directly.</p>
+      <p class="form-success-body">Thanks. We'll review your details and be in touch shortly. If you have any urgent questions, email <a href="mailto:james@culvertsense.com" style="color:var(--water)">james@culvertsense.com</a> directly.</p>
       <button class="form-success-close" onclick="this.closest('[data-fs-success]').style.display='none'">Done</button>
     </div>
   </div>
@@ -1581,7 +1581,7 @@
       <label for="f-sites">Number of candidate culvert sites</label>
       <select id="f-sites" name="sites" data-fs-field>
         <option value="" disabled selected>Select an estimate</option>
-        <option value="1">1 — single proof of concept</option>
+        <option value="1">1 site (single proof of concept)</option>
         <option value="2-5">2–5 sites</option>
         <option value="6-15">6–15 sites</option>
         <option value="15+">15+ sites</option>

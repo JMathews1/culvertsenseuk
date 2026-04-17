@@ -810,7 +810,7 @@
   .checkbox-option { display: flex; align-items: center; gap: 10px; font-size: 14px; color: rgba(255,255,255,0.7); cursor: pointer; user-select: none; }
   .checkbox-option input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 18px; height: 18px; border: 1.5px solid rgba(255,255,255,0.25); border-radius: 4px; background: rgba(255,255,255,0.06); cursor: pointer; flex-shrink: 0; position: relative; transition: background 0.15s, border-color 0.15s; }
   .checkbox-option input[type="checkbox"]:checked { background: var(--water); border-color: var(--water); }
-  .checkbox-option input[type="checkbox"]:checked::after { content: ''; position: absolute; left: 4px; top: 1px; width: 6px; height: 10px; border: 2px solid #fff; border-top: none; border-left: none; transform: rotate(45deg); }
+  .checkbox-option input[type="checkbox"]:checked::after { content: ''; position: absolute; left: 50%; top: 50%; width: 5px; height: 9px; border: 2px solid #fff; border-top: none; border-left: none; transform: translate(-50%, -62%) rotate(45deg); }
   .checkbox-option input[type="checkbox"]:focus-visible { outline: 2px solid var(--water); outline-offset: 2px; }
   .checkbox-option:hover input[type="checkbox"]:not(:checked) { border-color: rgba(74,155,196,0.5); }
 
@@ -819,6 +819,25 @@
     background: var(--navy);
     text-align: center;
     padding: 80px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .contact-form, .contact-title, .contact-sub, .contact-alt,
+  [data-fs-success], [data-fs-error] { position: relative; z-index: 1; }
+
+  .water-ripple-origin { position: absolute; pointer-events: none; z-index: 0; }
+  .water-ripple-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1.5px solid rgba(74,155,196,0.55);
+    left: 0; top: 0;
+    width: 4px; height: 4px;
+    transform: translate(-50%, -50%);
+    animation: water-ripple-out 1.3s ease-out forwards;
+  }
+  @keyframes water-ripple-out {
+    0%   { width: 4px;   height: 4px;   opacity: 0.8; border-width: 2px; }
+    100% { width: 320px; height: 320px; opacity: 0;   border-width: 1px; }
   }
 
   .contact-title {
@@ -1647,6 +1666,33 @@
     el.style.transform = 'translateY(16px)';
     el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
     observer.observe(el);
+  });
+
+  /* Checkbox water ripple */
+  document.querySelectorAll('.checkbox-option input[type="checkbox"]').forEach(function(cb) {
+    cb.addEventListener('change', function() {
+      if (!this.checked) return;
+      var section  = document.querySelector('.contact');
+      var sr       = section.getBoundingClientRect();
+      var cr       = this.getBoundingClientRect();
+      var x = cr.left - sr.left + cr.width  / 2;
+      var y = cr.top  - sr.top  + cr.height / 2;
+
+      var origin = document.createElement('div');
+      origin.className = 'water-ripple-origin';
+      origin.style.left = x + 'px';
+      origin.style.top  = y + 'px';
+
+      for (var i = 0; i < 4; i++) {
+        var ring = document.createElement('div');
+        ring.className = 'water-ripple-ring';
+        ring.style.animationDelay = (i * 0.2) + 's';
+        origin.appendChild(ring);
+      }
+
+      section.appendChild(origin);
+      setTimeout(function() { origin.remove(); }, 2200);
+    });
   });
 
   /* Formspree Ajax */

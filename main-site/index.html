@@ -833,7 +833,7 @@
     left: 0; top: 0;
     width: 4px; height: 4px;
     transform: translate(-50%, -50%);
-    animation: water-ripple-out 1.3s ease-out forwards;
+    animation: water-ripple-out 2s ease-out forwards;
   }
   @keyframes water-ripple-out {
     0%   { width: 4px;   height: 4px;   opacity: 0.8; border-width: 2px; }
@@ -1583,7 +1583,6 @@
       <div class="checkbox-group">
         <label class="checkbox-option"><input type="checkbox" name="interest" value="Culvert register (data)"> Culvert register (data)</label>
         <label class="checkbox-option"><input type="checkbox" name="interest" value="Sensor monitoring"> Sensor monitoring</label>
-        <label class="checkbox-option"><input type="checkbox" name="interest" value="Both"> Both</label>
       </div>
     </div>
     <div class="form-field">
@@ -1691,7 +1690,7 @@
       }
 
       section.appendChild(origin);
-      setTimeout(function() { origin.remove(); }, 2200);
+      setTimeout(function() { origin.remove(); }, 3200);
     });
   });
 

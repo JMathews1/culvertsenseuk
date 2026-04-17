@@ -1374,10 +1374,10 @@
     <div class="node-detail">
       <div class="detail-content active" id="detail-0">
         <div class="detail-title">Sensor Node</div>
-        <p class="detail-body">A waterproof ultrasonic sensor (JSN-SR04T) is mounted at or near the culvert inlet, pointing downward toward the water surface. It fires a 40kHz pulse, measures the echo return time, and calculates the distance to the water surface. The device wakes every few minutes, takes a reading, and transmits over LoRa radio, then goes back to sleep to preserve battery. No mains power. No cellular SIM.</p>
+        <p class="detail-body">A waterproof ultrasonic sensor is mounted at or near the culvert inlet, pointing downward toward the water surface. It fires a 40kHz pulse, measures the echo return time, and calculates the distance to the water surface. The device wakes every few minutes, takes a reading, and transmits over LoRa radio, then goes back to sleep to preserve battery. No mains power. No cellular SIM.</p>
         <div class="detail-specs">
           <span class="spec-pill spec-blue">ESP32 microcontroller</span>
-          <span class="spec-pill spec-blue">JSN-SR04T ultrasonic</span>
+
           <span class="spec-pill spec-blue">Solar option available</span>
         </div>
       </div>
@@ -1396,7 +1396,7 @@
         <p class="detail-body">Once the gateway receives a reading from a sensor node, it passes the data to a server that decides what to do with it. This is where the alert rules live: if the water level crosses a set threshold, an alert fires. The server is privately operated, meaning your council's data stays under your council's control. Over time, readings are correlated against Met Office rainfall data to build a clearer picture of which culverts are most at risk and when.</p>
         <div class="detail-specs">
           <span class="spec-pill spec-gray">Council-operated or hosted</span>
-          <span class="spec-pill spec-gray">The Things Stack (open source)</span>
+
           <span class="spec-pill spec-gray">Threshold + rate-of-rise logic</span>
           <span class="spec-pill spec-gray">Met Office API integration</span>
         </div>
@@ -1505,11 +1505,11 @@
     <div class="phases">
       <div class="phase">
         <span class="phase-num">1</span>
-        <div class="phase-title">Proof of concept</div>
+        <div class="phase-title">Pilot</div>
         <p class="phase-body">We start with your prioritised crossings from the culvert register and survey the top candidates on the ground. We then install one sensor node at a priority location. Data streams to a shared dashboard with simple threshold alerts. We handle everything: installation, configuration and monitoring. No operational dependency; data is advisory only.</p>
         <div style="margin-top:16px; margin-bottom:4px; font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.3);">Success looks like</div>
         <ul style="list-style:none; display:flex; flex-direction:column; gap:7px; margin-bottom:16px;">
-          <li style="font-size:13px; color:rgba(255,255,255,0.5);">No hardware failures over the proof-of-concept period</li>
+          <li style="font-size:13px; color:rgba(255,255,255,0.5);">No hardware failures over the pilot period</li>
           <li style="font-size:13px; color:rgba(255,255,255,0.5);">Readings consistent with site visual inspections</li>
           <li style="font-size:13px; color:rgba(255,255,255,0.5);">At least one rainfall event captured and logged</li>
           <li style="font-size:13px; color:rgba(255,255,255,0.5);">Alert fires correctly when water level rises</li>
@@ -1581,7 +1581,7 @@
       <label for="f-sites">Number of candidate culvert sites</label>
       <select id="f-sites" name="sites" data-fs-field>
         <option value="" disabled selected>Select an estimate</option>
-        <option value="1">1 site (single proof of concept)</option>
+        <option value="1">1 site (single pilot)</option>
         <option value="2-5">2–5 sites</option>
         <option value="6-15">6–15 sites</option>
         <option value="15+">15+ sites</option>

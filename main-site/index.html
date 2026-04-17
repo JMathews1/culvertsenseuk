@@ -806,9 +806,13 @@
   .hero-register-link:focus-visible { outline: 2px solid var(--water); outline-offset: 3px; border-radius: 3px; }
 
   /* Checkbox group */
-  .checkbox-group { display: flex; gap: 20px; flex-wrap: wrap; padding-top: 4px; }
-  .checkbox-option { display: flex; align-items: center; gap: 8px; font-size: 14px; color: rgba(255,255,255,0.7); cursor: pointer; }
-  .checkbox-option input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--water); cursor: pointer; flex-shrink: 0; }
+  .checkbox-group { display: flex; gap: 12px; flex-wrap: wrap; padding-top: 4px; }
+  .checkbox-option { display: flex; align-items: center; gap: 10px; font-size: 14px; color: rgba(255,255,255,0.7); cursor: pointer; user-select: none; }
+  .checkbox-option input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 18px; height: 18px; border: 1.5px solid rgba(255,255,255,0.25); border-radius: 4px; background: rgba(255,255,255,0.06); cursor: pointer; flex-shrink: 0; position: relative; transition: background 0.15s, border-color 0.15s; }
+  .checkbox-option input[type="checkbox"]:checked { background: var(--water); border-color: var(--water); }
+  .checkbox-option input[type="checkbox"]:checked::after { content: ''; position: absolute; left: 4px; top: 1px; width: 6px; height: 10px; border: 2px solid #fff; border-top: none; border-left: none; transform: rotate(45deg); }
+  .checkbox-option input[type="checkbox"]:focus-visible { outline: 2px solid var(--water); outline-offset: 2px; }
+  .checkbox-option:hover input[type="checkbox"]:not(:checked) { border-color: rgba(74,155,196,0.5); }
 
   /* ── CONTACT ── */
   .contact {

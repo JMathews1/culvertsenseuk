@@ -842,6 +842,37 @@
 
   .form-field textarea { resize: vertical; min-height: 100px; }
 
+  .field-error {
+    display: block;
+    font-size: 11px;
+    color: #e07070;
+    margin-top: 4px;
+    min-height: 1em;
+  }
+  .form-error-banner {
+    background: rgba(224,112,112,0.12);
+    border: 1px solid rgba(224,112,112,0.3);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #e07070;
+    margin-bottom: 16px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .form-success {
+    background: rgba(42,122,74,0.15);
+    border: 1px solid rgba(42,122,74,0.35);
+    border-radius: 8px;
+    padding: 20px 24px;
+    font-size: 15px;
+    color: var(--white);
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 24px;
+  }
+
   .form-submit {
     width: 100%;
     background: var(--water);
@@ -1352,28 +1383,37 @@
   <h2 class="contact-title">Request a pilot</h2>
   <p class="contact-sub">Tell us about your council and your priority culverts. We'll confirm if it's a good fit and outline the next steps. No commitment required.</p>
 
-  <form class="contact-form" action="mailto:james@culvertsense.com" method="GET" enctype="text/plain" onsubmit="handleSubmit(event)">
+  <div data-fs-success class="form-success" style="display:none">
+    <p>Thanks — we'll be in touch shortly.</p>
+  </div>
+  <div data-fs-error class="form-error-banner" style="display:none"></div>
+
+  <form id="contact-form" class="contact-form">
     <div class="form-row">
       <div class="form-field">
         <label for="f-name">Your name</label>
-        <input type="text" id="f-name" name="name" placeholder="Jane Smith" autocomplete="name">
+        <input type="text" id="f-name" name="name" placeholder="Jane Smith" autocomplete="name" data-fs-field>
+        <span data-fs-error="name" class="field-error"></span>
       </div>
       <div class="form-field">
         <label for="f-role">Role</label>
-        <input type="text" id="f-role" name="role" placeholder="Flood Risk Manager">
+        <input type="text" id="f-role" name="role" placeholder="Flood Risk Manager" data-fs-field>
+        <span data-fs-error="role" class="field-error"></span>
       </div>
     </div>
     <div class="form-field">
       <label for="f-council">Council / authority</label>
-      <input type="text" id="f-council" name="council" placeholder="e.g. Lincolnshire County Council">
+      <input type="text" id="f-council" name="council" placeholder="e.g. Lincolnshire County Council" data-fs-field>
+      <span data-fs-error="council" class="field-error"></span>
     </div>
     <div class="form-field">
       <label for="f-email">Work email</label>
-      <input type="email" id="f-email" name="email" placeholder="jane.smith@lincs.gov.uk" autocomplete="email">
+      <input type="email" id="f-email" name="email" placeholder="jane.smith@lincs.gov.uk" autocomplete="email" data-fs-field>
+      <span data-fs-error="email" class="field-error"></span>
     </div>
     <div class="form-field">
       <label for="f-sites">Number of candidate culvert sites</label>
-      <select id="f-sites" name="sites">
+      <select id="f-sites" name="sites" data-fs-field>
         <option value="" disabled selected>Select an estimate</option>
         <option value="1">1 — single proof of concept</option>
         <option value="2-5">2–5 sites</option>
@@ -1381,12 +1421,14 @@
         <option value="15+">15+ sites</option>
         <option value="unsure">Not sure yet</option>
       </select>
+      <span data-fs-error="sites" class="field-error"></span>
     </div>
     <div class="form-field">
       <label for="f-message">Anything else?</label>
-      <textarea id="f-message" name="message" placeholder="Known problem culverts, preferred timeline, questions about the technology…"></textarea>
+      <textarea id="f-message" name="message" placeholder="Known problem culverts, preferred timeline, questions about the technology…" data-fs-field></textarea>
+      <span data-fs-error="message" class="field-error"></span>
     </div>
-    <button type="submit" class="form-submit">Send request</button>
+    <button type="submit" class="form-submit" data-fs-submit-btn>Send request</button>
   </form>
 
   <p class="contact-alt">Or email directly: <a href="mailto:james@culvertsense.com">james@culvertsense.com</a></p>
@@ -1441,28 +1483,10 @@
     observer.observe(el);
   });
 
-  /* Contact form — graceful fallback to mailto */
-  window.handleSubmit = function(e) {
-    e.preventDefault();
-    var name    = document.getElementById('f-name').value;
-    var role    = document.getElementById('f-role').value;
-    var council = document.getElementById('f-council').value;
-    var email   = document.getElementById('f-email').value;
-    var sites   = document.getElementById('f-sites').value;
-    var message = document.getElementById('f-message').value;
-
-    var subject = encodeURIComponent('CulvertSense pilot request — ' + (council || 'Council'));
-    var body = encodeURIComponent(
-      'Name: ' + name + '\n' +
-      'Role: ' + role + '\n' +
-      'Council: ' + council + '\n' +
-      'Email: ' + email + '\n' +
-      'Sites: ' + sites + '\n\n' +
-      message
-    );
-
-    window.location.href = 'mailto:james@culvertsense.com?subject=' + subject + '&body=' + body;
-  };
+  /* Formspree Ajax */
+  window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
+  formspree('initForm', { formElement: '#contact-form', formId: 'myklereq' });
 </script>
+<script src="https://unpkg.com/@formspree/ajax@1" defer></script>
 </body>
 </html>

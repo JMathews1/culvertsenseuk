@@ -862,16 +862,65 @@
     margin-right: auto;
   }
   .form-success {
-    background: rgba(42,122,74,0.15);
-    border: 1px solid rgba(42,122,74,0.35);
-    border-radius: 8px;
-    padding: 20px 24px;
-    font-size: 15px;
-    color: var(--white);
-    text-align: center;
-    max-width: 600px;
-    margin: 0 auto 24px;
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(13,31,45,0.85);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    padding: 24px;
   }
+  .form-success-card {
+    background: linear-gradient(160deg, #1a3a52, #0d2a3e);
+    border: 1px solid rgba(74,155,196,0.25);
+    border-radius: 16px;
+    padding: 48px 40px;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .form-success-icon {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: rgba(42,122,74,0.2);
+    border: 1px solid rgba(42,122,74,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+  }
+  .form-success-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 28px;
+    letter-spacing: -0.5px;
+    color: var(--white);
+  }
+  .form-success-body {
+    font-size: 14px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.6);
+    font-weight: 300;
+  }
+  .form-success-close {
+    margin-top: 8px;
+    background: var(--water);
+    color: var(--navy);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 12px 28px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .form-success-close:hover { background: var(--foam); }
 
   .form-submit {
     width: 100%;
@@ -1384,7 +1433,12 @@
   <p class="contact-sub">Tell us about your council and your priority culverts. We'll confirm if it's a good fit and outline the next steps. No commitment required.</p>
 
   <div data-fs-success class="form-success" style="display:none">
-    <p>Thanks — we'll be in touch shortly.</p>
+    <div class="form-success-card">
+      <div class="form-success-icon">✓</div>
+      <h3 class="form-success-title">Request sent</h3>
+      <p class="form-success-body">Thanks — we'll review your details and be in touch shortly. If you have any urgent questions, email <a href="mailto:james@culvertsense.com" style="color:var(--water)">james@culvertsense.com</a> directly.</p>
+      <button class="form-success-close" onclick="this.closest('[data-fs-success]').style.display='none'">Done</button>
+    </div>
   </div>
   <div data-fs-error class="form-error-banner" style="display:none"></div>
 

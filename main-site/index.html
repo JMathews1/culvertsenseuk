@@ -765,6 +765,51 @@
     font-weight: 300;
   }
 
+  /* ── REGISTER ── */
+  .register { background: var(--ocean); color: var(--white); }
+  .register .section-tag { color: var(--foam); }
+  .register-inner { max-width: 1100px; margin: 0 auto; }
+  .register-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: end;
+    margin-bottom: 40px;
+  }
+  .register-body {
+    color: rgba(255,255,255,0.6);
+    font-size: 15px;
+    line-height: 1.75;
+    font-weight: 300;
+    margin-bottom: 40px;
+    max-width: 720px;
+  }
+  .register .fact-cards { grid-template-columns: repeat(3, 1fr); margin-top: 0; margin-bottom: 32px; }
+  .register .fact-card { border-left-color: var(--water); }
+  .register .fact-card .num { color: var(--water); }
+  .register-delivery {
+    font-size: 13px;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.65;
+    font-weight: 300;
+    margin-top: 32px;
+    max-width: 720px;
+  }
+  .hero-register-link {
+    font-size: 13px;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+    transition: color 0.2s;
+    margin-top: 4px;
+  }
+  .hero-register-link:hover { color: var(--foam); }
+  .hero-register-link:focus-visible { outline: 2px solid var(--water); outline-offset: 3px; border-radius: 3px; }
+
+  /* Checkbox group */
+  .checkbox-group { display: flex; gap: 20px; flex-wrap: wrap; padding-top: 4px; }
+  .checkbox-option { display: flex; align-items: center; gap: 8px; font-size: 14px; color: rgba(255,255,255,0.7); cursor: pointer; }
+  .checkbox-option input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--water); cursor: pointer; flex-shrink: 0; }
+
   /* ── CONTACT ── */
   .contact {
     background: var(--navy);
@@ -977,7 +1022,8 @@
     nav { padding: 20px 24px; }
     section { padding: 64px 24px; }
     .problem-grid, .system-header, .why-header, .pilot-header,
-    .roi-header, .detection-header { grid-template-columns: 1fr; gap: 32px; }
+    .roi-header, .detection-header, .register-header { grid-template-columns: 1fr; gap: 32px; }
+    .register .fact-cards { grid-template-columns: 1fr 1fr; }
     .nodes { grid-template-columns: repeat(2, 1fr); gap: 24px; }
     .compare-grid, .phases { grid-template-columns: 1fr; }
     .fact-cards { grid-template-columns: 1fr; }
@@ -1044,6 +1090,8 @@
       padding: 20px;
     }
 
+    .register .fact-cards { grid-template-columns: 1fr; }
+
     /* Keep body text readable */
     .section-body, .detail-body, .detection-card-body,
     .phase-body, .roi-body, .pilot-body {
@@ -1070,13 +1118,14 @@
   </nav>
 
   <div class="hero-content">
-    <span class="hero-tag">LoRaWAN · Early Warning · Infrastructure</span>
+    <span class="hero-tag">LoRaWAN · Early Warning · Culvert Register</span>
     <h1 class="hero-title">Know before<br>it <em>floods.</em></h1>
     <p class="hero-sub">Real-time culvert monitoring for UK councils. Continuous water-level sensors give operations teams early warning before overtopping — not a phone call after the road closes.</p>
     <div class="hero-ctas">
       <a href="#system" class="btn-primary">See how it works</a>
       <a href="mailto:james@culvertsense.com?subject=CulvertSense%20Pilot%20Enquiry" class="btn-ghost">Request a pilot</a>
     </div>
+    <a href="#register" class="hero-register-link">Or: see the national culvert register →</a>
   </div>
 
   <div class="hero-stats">
@@ -1229,6 +1278,58 @@
 
       </svg>
     </div>
+  </div>
+</section>
+
+<!-- REGISTER -->
+<section class="register" id="register">
+  <div class="register-inner">
+    <div class="register-header">
+      <div>
+        <span class="section-tag">The Register</span>
+        <h2 class="section-title">No register?<br>Start with 27,000 crossings.</h2>
+      </div>
+      <p class="section-body" style="color:rgba(255,255,255,0.6);">Most LLFAs have no culvert inventory. We've built one — pre-populated from open data, risk-scored, and filtered to your authority area.</p>
+    </div>
+
+    <p class="register-body">We cross-reference OS Open Roads, OS Open Rivers, the EA Flood Map for Planning, recorded flood outlines, Section 19 investigation areas, EA Main Rivers, and IDB boundaries to identify every probable road–watercourse crossing in England. The output is a structured register of approximately 27,000 culverts, each one scored and prioritised so your team knows where to look first.</p>
+
+    <div class="fact-cards">
+      <div class="fact-card">
+        <span class="num">~27,000</span>
+        <p>probable crossings identified across England — the first structured starting point for councils with no existing register.</p>
+      </div>
+      <div class="fact-card">
+        <span class="num">Risk-scored</span>
+        <p>by flood zone, recorded flood history, and proximity to housing and critical infrastructure. Highest-priority sites surface to the top.</p>
+      </div>
+      <div class="fact-card">
+        <span class="num">Authority-tagged</span>
+        <p>each crossing flagged by responsible body (EA, IDB, Canal, LLFA), so jurisdictional ambiguity is resolved before fieldwork begins.</p>
+      </div>
+    </div>
+
+    <div class="detection-card" style="background:rgba(74,155,196,0.06);border-color:rgba(74,155,196,0.2);">
+      <div class="detection-card-title" style="margin-bottom:24px;">How crossings are classified</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;">
+        <div>
+          <div class="dual-col-title pro">Confirmed</div>
+          <p class="detection-card-body" style="margin-bottom:0;">Road and watercourse intersect with corroborating EA or IDB asset data.</p>
+        </div>
+        <div>
+          <div class="dual-col-title" style="color:rgba(255,255,255,0.45);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.08);">Probable</div>
+          <p class="detection-card-body" style="margin-bottom:0;">Geometry intersects but no asset record; field verification recommended.</p>
+        </div>
+        <div>
+          <div class="dual-col-title con">Candidate</div>
+          <p class="detection-card-body" style="margin-bottom:0;">Likely crossing inferred from terrain and drainage patterns; lower confidence.</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="register-delivery">Delivered as a GeoJSON file for QGIS, ArcGIS, or any GIS stack, or as an interactive web map filtered to your authority boundary. No procurement of a new platform required.</p>
+
+    <a href="#contact" class="btn-ghost" style="display:inline-block;margin-top:32px;">See the register for your authority area</a>
   </div>
 </section>
 
@@ -1402,7 +1503,7 @@
       <div class="phase">
         <span class="phase-num">1</span>
         <div class="phase-title">Proof of concept</div>
-        <p class="phase-body">We start with a site survey to identify the best candidate culverts in your area. We then install one sensor node at a priority location. Data streams to a shared dashboard with simple threshold alerts. We handle everything — installation, configuration and monitoring. No operational dependency; data is advisory only.</p>
+        <p class="phase-body">We start with your prioritised crossings from the culvert register and survey the top candidates on the ground. We then install one sensor node at a priority location. Data streams to a shared dashboard with simple threshold alerts. We handle everything — installation, configuration and monitoring. No operational dependency; data is advisory only.</p>
         <div style="margin-top:16px; margin-bottom:4px; font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.3);">Success looks like</div>
         <ul style="list-style:none; display:flex; flex-direction:column; gap:7px; margin-bottom:16px;">
           <li style="font-size:13px; color:rgba(255,255,255,0.5); padding-left:14px; position:relative;"><span style="position:absolute;left:0;color:rgba(255,255,255,0.2);">—</span>No hardware failures over the proof-of-concept period</li>
@@ -1453,6 +1554,14 @@
         <label for="f-role">Role</label>
         <input type="text" id="f-role" name="role" placeholder="Flood Risk Manager" data-fs-field>
         <span data-fs-error="role" class="field-error"></span>
+      </div>
+    </div>
+    <div class="form-field" id="f-interest">
+      <label>Interested in:</label>
+      <div class="checkbox-group">
+        <label class="checkbox-option"><input type="checkbox" name="interest" value="Culvert register (data)"> Culvert register (data)</label>
+        <label class="checkbox-option"><input type="checkbox" name="interest" value="Sensor monitoring"> Sensor monitoring</label>
+        <label class="checkbox-option"><input type="checkbox" name="interest" value="Both"> Both</label>
       </div>
     </div>
     <div class="form-field">

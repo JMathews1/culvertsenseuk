@@ -10,7 +10,7 @@ export default function GatewayPage() {
     <>
       <div className="topbar">
         <div className="topbar-title">Gateway</div>
-        <span className="topbar-sub">LoRaWAN gateway status · HRM Stormwater</span>
+        <span className="topbar-sub">LoRaWAN gateway status · Derbyshire</span>
       </div>
       <div className="content">
         <div className="grid-3-1">

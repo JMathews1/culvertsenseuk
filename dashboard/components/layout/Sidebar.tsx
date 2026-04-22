@@ -117,9 +117,9 @@ export default function Sidebar({ alertCount = 0, isOpen = false, onClose }: Sid
       {/* Footer */}
       <div className="sidebar-footer">
         <div className="client-chip">
-          <div className="client-avatar">HW</div>
+          <div className="client-avatar">DC</div>
           <div>
-            <div className="client-name">Halifax Water</div>
+            <div className="client-name">Derbyshire Council</div>
             <div className="client-role">Pilot Yr 1</div>
           </div>
         </div>

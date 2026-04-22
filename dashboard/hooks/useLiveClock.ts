@@ -6,14 +6,14 @@ export default function useLiveClock(): string {
 
   useEffect(() => {
     const update = () => {
-      const t = new Date().toLocaleTimeString('en-CA', {
+      const t = new Date().toLocaleTimeString('en-GB', {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
         hour12: false,
-        timeZone: 'America/Halifax',
+        timeZone: 'Europe/London',
       });
-      setTime(`${t} ADT`);
+      setTime(`${t} BST`);
     };
     update();
     const id = setInterval(update, 1000);

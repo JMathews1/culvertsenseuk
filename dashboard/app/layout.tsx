@@ -18,7 +18,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: 'CulvertSense — Operations Dashboard',
-  description: 'Real-time stormwater culvert monitoring for Halifax Regional Municipality',
+  description: 'Real-time stormwater culvert monitoring for Derbyshire County Council',
 };
 
 export default function RootLayout({

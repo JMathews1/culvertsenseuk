@@ -10,7 +10,7 @@ export default function HistoricalPage() {
     <>
       <div className="topbar">
         <div className="topbar-title">Historical Data</div>
-        <span className="topbar-sub">7-day water level trends · HRM Stormwater</span>
+        <span className="topbar-sub">7-day water level trends · Derbyshire</span>
       </div>
       <div className="content">
         <WaterLevelChart

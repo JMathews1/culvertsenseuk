@@ -12,7 +12,7 @@ export default function MapPage() {
     <>
       <div className="topbar">
         <div className="topbar-title">Site Map</div>
-        <span className="topbar-sub">HRM Stormwater · sensor network overview</span>
+        <span className="topbar-sub">Derbyshire · sensor network overview</span>
       </div>
       <div className="content">
         {sensors.length > 0 && (

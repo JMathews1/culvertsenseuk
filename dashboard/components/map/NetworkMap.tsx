@@ -33,7 +33,7 @@ export default function NetworkMap({ sensors, selectedIdx, onSelect }: NetworkMa
       <div className="panel-head">
         <div className="panel-title">
           <span className="dot" />
-          Network Map · HRM Stormwater
+          Network Map · Derbyshire
         </div>
       </div>
       <div className="map-container">

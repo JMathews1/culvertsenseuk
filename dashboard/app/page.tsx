@@ -2,25 +2,21 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import useLiveClock from '@/hooks/useLiveClock';
-import useAnimatedCounter from '@/hooks/useAnimatedCounter';
-import { fetchSensors, fetchAlerts, fetchGateway, fetchSavings } from '@/lib/api';
+import { fetchSensors, fetchAlerts, fetchGateway } from '@/lib/api';
 import { MOCK_CHART_DATA, MOCK_CHART_LABELS } from '@/lib/mock-data';
 import NetworkMap from '@/components/map/NetworkMap';
 import SensorTable from '@/components/sensors/SensorTable';
 import WaterLevelChart from '@/components/charts/WaterLevelChart';
 import GatewayPanel from '@/components/gateway/GatewayPanel';
-import SavingsPanel from '@/components/savings/SavingsPanel';
 import AlertList from '@/components/alerts/AlertList';
 
 export default function DashboardPage() {
   const clock = useLiveClock();
   const [selectedIdx, setSelectedIdx] = useState(0);
-  const savingsCounter = useAnimatedCounter(33750);
 
   const { data: sensors = [] } = useSWR('sensors', fetchSensors, { refreshInterval: 30_000 });
   const { data: alerts = [] } = useSWR('alerts', fetchAlerts, { refreshInterval: 30_000 });
   const { data: gateway } = useSWR('gateway', fetchGateway, { refreshInterval: 30_000 });
-  const { data: savings } = useSWR('savings', fetchSavings);
 
   const activeAlerts = alerts.filter((a) => a.badge === 'ACTIVE' || a.badge === 'ALERT');
   const activeAlert = activeAlerts[0];
@@ -38,7 +34,7 @@ export default function DashboardPage() {
       <div className="topbar">
         <div className="topbar-title">Operations Overview</div>
         <span className="topbar-sub">
-          HRM Stormwater · {sensors.length} nodes · pilot yr 1
+          Derbyshire · {sensors.length} nodes · pilot yr 1
         </span>
         <div className="topbar-right">
           <div className="live-pill">
@@ -69,11 +65,6 @@ export default function DashboardPage() {
             <div className="stat-value" style={{ fontSize: 18 }}>{lastUpdated}</div>
             <div className="stat-desc">{lastSensor || sensors[0]?.name || 'Cole Harbour Rd'}</div>
           </div>
-          <div className="stat-card save">
-            <div className="stat-label">Est. Savings YTD</div>
-            <div className="stat-value" style={{ fontSize: 20 }}>${savingsCounter.toLocaleString()}</div>
-            <div className="stat-desc">Based on pilot yr 1 data</div>
-          </div>
         </div>
 
         {/* 3:1 grid */}
@@ -89,7 +80,6 @@ export default function DashboardPage() {
           )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {gateway && <GatewayPanel gateway={gateway} />}
-            {savings && <SavingsPanel savings={savings} />}
           </div>
         </div>
 

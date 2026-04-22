@@ -29,7 +29,7 @@ export default function SensorsPage() {
     <>
       <div className="topbar">
         <div className="topbar-title">Live Feed</div>
-        <span className="topbar-sub">{sensors.length} sensor nodes · HRM Stormwater</span>
+        <span className="topbar-sub">{sensors.length} sensor nodes · Derbyshire</span>
       </div>
       <div className="content">
         <div className="panel">

@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CulvertSense — Council Portal</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%231a2736' stroke='%233498db' stroke-width='1.5'/%3E%3Cpath d='M16 5C16 5 7 15.5 7 21a9 9 0 0018 0C25 15.5 16 5 16 5z' fill='%233498db'/%3E%3C/svg%3E">
+
+<!--
+  DEPLOYMENT NOTE:
+  Set the following response headers for culvert_crossings.geojson on the Azure Static Website CDN:
+    Cache-Control: public, max-age=86400
+    Content-Encoding: gzip   (serve a pre-gzipped .geojson.gz with this header)
+-->
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Leaflet.markercluster -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  #map { height: 100vh; width: 100%; }
+
+  /* ── Dark mode variables ── */
+  :root {
+    --bg:        #ffffff;
+    --bg-panel:  #ffffff;
+    --bg-modal:  #ffffff;
+    --border:    #eeeeee;
+    --text:      #333333;
+    --text-muted:#777777;
+    --text-faint:#aaaaaa;
+    --shadow:    rgba(0,0,0,0.18);
+    --brand:     #1a3c5e;
+    --stats-bg:  rgba(255,255,255,0.92);
+    --loading-bg:rgba(255,255,255,0.85);
+    --input-bg:  #f8f8f8;
+  }
+  body.dark {
+    --bg:        #1a1f2e;
+    --bg-panel:  #242938;
+    --bg-modal:  #242938;
+    --border:    #333a4d;
+    --text:      #dde3f0;
+    --text-muted:#8a94a8;
+    --text-faint:#555e73;
+    --shadow:    rgba(0,0,0,0.5);
+    --brand:     #4db8ff;
+    --stats-bg:  rgba(36,41,56,0.95);
+    --loading-bg:rgba(26,31,46,0.92);
+    --input-bg:  #1a1f2e;
+  }
+
+  /* ── Accessibility: focus-visible ── */
+  :focus-visible { outline: 2px solid #4db8ff; outline-offset: 2px; }
+  .legend-item:focus-visible { border-radius: 4px; }
+
+  /* ── Header panel ── */
+  #header {
+    position: absolute;
+    top: 10px; left: 10px;
+    z-index: 1000;
+    background: var(--bg-panel);
+    border-radius: 8px;
+    box-shadow: 0 2px 12px var(--shadow);
+    padding: 12px 16px;
+    max-width: 280px;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  #header .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  #header .logo svg { flex-shrink: 0; }
+  #header .brand {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--brand);
+    letter-spacing: -0.3px;
+  }
+  #header .subtitle {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin-top: 2px;
+  }
+
+  /* Active filter orange dot */
+  #filter-active-dot {
+    width: 8px; height: 8px;
+    background: #e67e00;
+    border-radius: 50%;
+    margin-left: 6px;
+    vertical-align: middle;
+    display: none;
+  }
+  #filter-active-dot.visible { display: inline-block; }
+
+  /* ── Legend / filter panel ── */
+  #controls {
+    position: absolute;
+    top: 10px; right: 10px;
+    z-index: 1000;
+    background: var(--bg-panel);
+    border-radius: 8px;
+    box-shadow: 0 2px 12px var(--shadow);
+    padding: 12px 16px;
+    min-width: 200px;
+    max-width: 230px;
+    transition: background 0.2s, box-shadow 0.2s, transform 0.25s ease;
+  }
+  #controls.collapsed {
+    transform: translateX(calc(100% + 10px));
+  }
+  /* Tab that sticks out from the left edge of the panel */
+  #controls-tab {
+    position: absolute;
+    left: -26px;
+    top: 16px;
+    width: 26px;
+    height: 44px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-right: none;
+    border-radius: 6px 0 0 6px;
+    box-shadow: -2px 2px 6px var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--text-muted);
+    transition: background 0.15s, color 0.15s;
+    user-select: none;
+  }
+  #controls-tab:hover { background: var(--input-bg); color: var(--text); }
+  #controls h3 {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    margin-bottom: 8px;
+    margin-top: 10px;
+  }
+  #controls h3:first-child { margin-top: 0; }
+  .filter-section + .filter-section {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 7px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .legend-item:last-child { margin-bottom: 0; }
+  .swatch {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 1.5px solid rgba(0,0,0,.2);
+  }
+  .legend-label { font-size: 13px; color: var(--text); }
+  .legend-count { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+  .legend-item.disabled .swatch { opacity: 0.3; }
+  .legend-item.disabled .legend-label { color: var(--text-faint); }
+
+  /* signal filters */
+  .signal-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 7px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .signal-item:last-child { margin-bottom: 0; }
+  .signal-item input[type=checkbox] {
+    width: 14px; height: 14px;
+    accent-color: #1a3c5e;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .signal-label {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.3;
+    flex: 1;
+  }
+  .signal-count {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-left: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* priority filter */
+  .priority-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 7px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .priority-item:last-child { margin-bottom: 0; }
+  .priority-item input[type=checkbox] {
+    width: 14px; height: 14px;
+    accent-color: #555;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .priority-dot { flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .priority-label { font-size: 12px; color: var(--text); }
+  .priority-count { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+
+  /* Reset filters button — only shown when filters differ from default */
+  #reset-filters-btn {
+    display: none;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+    color: var(--text-muted);
+    text-align: center;
+    font-family: inherit;
+  }
+  #reset-filters-btn:hover { background: var(--input-bg); }
+  #controls.filters-active #reset-filters-btn { display: block; }
+
+  /* ── Stats bar ── */
+  #stats-bar {
+    position: absolute;
+    bottom: 30px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background: var(--stats-bg);
+    border-radius: 20px;
+    box-shadow: 0 2px 8px var(--shadow);
+    padding: 6px 18px;
+    font-size: 12px;
+    color: var(--text);
+    white-space: nowrap;
+    pointer-events: none;
+    transition: background 0.2s;
+  }
+  #stats-bar strong { color: var(--brand); }
+
+  @keyframes flash-count {
+    0%   { color: #d73027; }
+    100% { color: #1a3c5e; }
+  }
+  #visible-count.flash { animation: flash-count 0.4s ease-out; }
+
+  /* ── Loading overlay ── */
+  #loading {
+    position: absolute;
+    inset: 0;
+    z-index: 2000;
+    background: var(--loading-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+  }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 4px solid #e0e0e0;
+    border-top-color: #1a3c5e;
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loading p { font-size: 14px; color: var(--text-muted); }
+  #loading-progress { font-size: 13px; color: var(--text-faint); min-height: 20px; }
+
+  /* ── Popup ── */
+  .leaflet-popup-content-wrapper {
+    background: var(--bg-panel) !important;
+    color: var(--text) !important;
+    box-shadow: 0 3px 14px var(--shadow) !important;
+  }
+  .leaflet-popup-tip { background: var(--bg-panel) !important; }
+  .cs-popup h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--brand);
+    margin-bottom: 6px;
+  }
+  .cs-popup table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  .cs-popup td { padding: 2px 4px; vertical-align: top; }
+  .cs-popup td:first-child { color: var(--text-muted); white-space: nowrap; padding-right: 8px; }
+  .risk-badge {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .risk-high   { background: #d73027; }
+  .risk-medium { background: #fc8d59; color: #333; }
+
+  .cta-link {
+    display: block;
+    margin-top: 10px;
+    text-align: center;
+    padding: 6px 12px;
+    background: #1a3c5e;
+    color: #fff !important;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s;
+    width: 100%;
+  }
+  .cta-link:hover { background: #122a44; }
+  .coord-link { color: #1a3c5e; text-decoration: underline dotted; }
+
+  /* ── Custom cluster icon ── */
+  .custom-cluster {
+    background: rgba(30, 80, 140, 0.75);
+    border: 2px solid rgba(255,255,255,0.8);
+    border-radius: 50%;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+
+  /* ── Custom map controls (reset view / locate / dark mode) ── */
+  .custom-map-ctrl {
+    background: var(--bg-panel);
+    border-radius: 4px;
+    box-shadow: 0 1px 5px var(--shadow);
+    border: 1px solid var(--border);
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--text);
+    display: block;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    transition: background 0.2s;
+  }
+  .custom-map-ctrl:hover { background: var(--input-bg); }
+
+  /* ── Welcome modal ── */
+  #welcome-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  #welcome-modal .modal-box {
+    background: var(--bg-modal);
+    border-radius: 10px;
+    box-shadow: 0 4px 32px var(--shadow);
+    max-width: 520px;
+    width: 100%;
+    padding: 28px 32px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  #welcome-modal h2 {
+    font-size: 18px;
+    color: var(--brand);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  #welcome-modal .modal-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    margin-top: 2px;
+  }
+  #welcome-modal p {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  #welcome-modal .source-list {
+    list-style: none;
+    margin: 0 0 14px 0;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  #welcome-modal .source-list li {
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    line-height: 1.4;
+  }
+  #welcome-modal .source-list li:last-child { border-bottom: none; }
+  #welcome-modal .src-label {
+    font-weight: 600;
+    color: var(--brand);
+    min-width: 140px;
+    flex-shrink: 0;
+  }
+  #welcome-modal .disclaimer {
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+  #welcome-close-btn {
+    display: block;
+    width: 100%;
+    background: #1a3c5e;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 11px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    font-family: inherit;
+  }
+  #welcome-close-btn:hover { background: #122a44; }
+
+  /* ── Why this rating? section ── */
+  .why-section {
+    border-top: 1px solid var(--border);
+    margin-top: 10px;
+    padding-top: 8px;
+  }
+  .why-heading {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 5px;
+  }
+  .why-risk {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.5;
+    margin-bottom: 5px;
+  }
+  .why-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 5px 0;
+  }
+  .why-list li {
+    font-size: 11.5px;
+    color: var(--text);
+    line-height: 1.5;
+    padding: 1px 0;
+  }
+  .why-more {
+    color: var(--text-muted) !important;
+    font-style: italic;
+  }
+  .why-none {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 5px;
+  }
+  .why-caveat {
+    font-size: 10.5px;
+    color: var(--text-faint);
+    font-style: italic;
+    line-height: 1.4;
+    margin-top: 4px;
+  }
+
+
+  /* Attribution override */
+  .leaflet-control-attribution { font-size: 10px !important; }
+
+
+
+  /* ── Responsive / mobile ── */
+  @media (max-width: 640px) {
+    #header {
+      top: auto;
+      bottom: 60px;
+      left: 8px;
+      right: 8px;
+      max-width: none;
+      font-size: 12px;
+      padding: 8px 12px;
+    }
+    #header .subtitle { display: none; }
+    #controls {
+      top: 8px;
+      right: 8px;
+      left: 8px;
+      max-width: none;
+      max-height: 45vh;
+      overflow-y: auto;
+      font-size: 12px;
+    }
+    #stats-bar { font-size: 11px; padding: 5px 12px; bottom: 36px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Welcome modal ── -->
+<div id="welcome-modal" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+  <div class="modal-box">
+    <h2 id="welcome-title">
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+        <rect width="28" height="28" rx="6" fill="#1a3c5e"/>
+        <path d="M4 18 Q7 12 10 18 Q13 24 16 18 Q19 12 22 18 Q24 22 24 22" stroke="#4db8ff" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <rect x="9" y="8" width="10" height="7" rx="1" stroke="#fff" stroke-width="1.5" fill="none"/>
+        <path d="M9 15 Q14 11 19 15" stroke="#fff" stroke-width="1.5" fill="none"/>
+      </svg>
+      Welcome to CulvertSense
+    </h2>
+    <div class="modal-sub">High-risk culvert crossings in England</div>
+
+    <p>CulvertSense maps road crossings of watercourses that sit within Environment Agency flood-risk zones, helping identify where culverts may be at risk of blocking, surcharging, or contributing to flood events.</p>
+
+    <p>Each marker represents a location where a road crosses a watercourse within a medium or high flood-risk area. Markers are coloured by flood risk and sized by priority score (1–5) based on multiple risk signals including previous flood history, proximity to critical infrastructure, and housing density.</p>
+
+    <p><strong>How we built this dataset:</strong></p>
+    <p>Road and watercourse geometries were intersected spatially using OS Open data. Crossing points that fall within EA Flood Zone 2 or 3 polygons were retained. Each crossing was then scored against additional risk signals to produce a priority 1–5 ranking.</p>
+
+    <ul class="source-list">
+      <li><span class="src-label">OS Open Roads</span>Road network geometry — Ordnance Survey, &copy; Crown copyright, OGL v3</li>
+      <li><span class="src-label">OS Open Rivers</span>Watercourse network — Ordnance Survey, &copy; Crown copyright, OGL v3</li>
+      <li><span class="src-label">EA Flood Risk Zones</span>Flood zones 2 &amp; 3 — Environment Agency, &copy; Crown copyright, OGL v3</li>
+      <li><span class="src-label">EA Historic Flood Map</span>Previous flood extents — Environment Agency, &copy; Crown copyright, OGL v3</li>
+      <li><span class="src-label">EA Main Rivers</span>Statutory Main River Map — Environment Agency, &copy; Crown copyright, OGL v3</li>
+      <li><span class="src-label">SRTM 30m DEM</span>Shuttle Radar Topography Mission elevation data — NASA/USGS, public domain</li>
+      <li><span class="src-label">Critical Infrastructure</span>Hospitals, schools &amp; emergency services — OpenStreetMap contributors, &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" style="color:#1a3c5e">ODbL</a></li>
+      <li><span class="src-label">Residential Areas</span>Residential land use polygons — OpenStreetMap contributors, &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" style="color:#1a3c5e">ODbL</a></li>
+    </ul>
+
+    <div class="disclaimer">
+      ⚠️ <strong>Disclaimer:</strong> This map is provided for informational and research purposes only. It does not constitute engineering advice or an official flood risk assessment. Always consult a qualified engineer and relevant authorities before taking any action based on this data. Crossings are identified by spatial analysis and may include false positives. Data accuracy is not guaranteed.
+    </div>
+
+    <button id="welcome-close-btn">Explore the map →</button>
+  </div>
+</div>
+
+<!-- ── Loading overlay ── -->
+<div id="loading">
+  <div class="spinner"></div>
+  <p>Loading culvert crossing data…</p>
+  <div id="loading-progress"></div>
+</div>
+
+<div id="map"></div>
+
+<!-- ── Header ── -->
+<div id="header">
+  <div class="logo">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="28" height="28" rx="6" fill="#1a3c5e"/>
+      <path d="M4 18 Q7 12 10 18 Q13 24 16 18 Q19 12 22 18 Q24 22 24 22"
+            stroke="#4db8ff" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <rect x="9" y="8" width="10" height="7" rx="1" stroke="#fff" stroke-width="1.5" fill="none"/>
+      <path d="M9 15 Q14 11 19 15" stroke="#fff" stroke-width="1.5" fill="none"/>
+    </svg>
+    <span class="brand">CulvertSense<span id="filter-active-dot" title="Filters active"></span></span>
+  </div>
+  <div class="subtitle">High-risk culvert crossings in England.<br>Roads crossing watercourses in flood-risk zones.</div>
+</div>
+
+<!-- Dark mode toggle -->
+<button id="dark-toggle" class="custom-map-ctrl" style="position:absolute;top:10px;left:306px;z-index:1001;margin:0;" title="Toggle dark mode" onclick="toggleDarkMode()">🌙 Dark</button>
+
+<!-- ── Legend / filter panel ── -->
+<div id="controls">
+  <div id="controls-tab" onclick="toggleControls()" title="Toggle filters">›</div>
+  <div id="controls-body">
+
+  <!-- LLFA filter -->
+  <div class="filter-section">
+    <h3>Authority area</h3>
+    <select id="llfa-select" disabled onchange="onLlfaSelect()"
+            style="width:100%;padding:5px 6px;font-size:12px;border:1px solid var(--border);
+                   border-radius:4px;background:var(--bg);color:var(--text);font-family:inherit;cursor:pointer;">
+      <option value="">Loading…</option>
+    </select>
+  </div>
+
+  <!-- Flood risk -->
+  <div class="filter-section" id="flood-risk-section">
+    <h3>Flood risk</h3>
+    <div class="legend-item" id="toggle-high"
+         onclick="toggleRisk('high')"
+         tabindex="0"
+         role="checkbox"
+         aria-checked="true"
+         aria-label="Show high risk crossings"
+         onkeydown="if(event.key===' '||event.key==='Enter'){toggleRisk('high');event.preventDefault()}">
+      <div class="swatch" style="background:#d73027"></div>
+      <span class="legend-label">High risk</span>
+      <span class="legend-count" id="count-high">—</span>
+    </div>
+    <div class="legend-item" id="toggle-medium"
+         onclick="toggleRisk('medium')"
+         tabindex="0"
+         role="checkbox"
+         aria-checked="true"
+         aria-label="Show medium risk crossings"
+         onkeydown="if(event.key===' '||event.key==='Enter'){toggleRisk('medium');event.preventDefault()}">
+      <div class="swatch" style="background:#fc8d59"></div>
+      <span class="legend-label">Medium risk</span>
+      <span class="legend-count" id="count-medium">—</span>
+    </div>
+  </div>
+
+  <!-- Priority -->
+  <div class="filter-section" id="priority-section">
+    <h3>Priority (dot size)</h3>
+    <label class="priority-item">
+      <input type="checkbox" id="prio-2" checked onchange="scheduleFilter()">
+      <span class="priority-dot"><svg width="12" height="12"><circle cx="6" cy="6" r="4" fill="#888" opacity=".7"/></svg></span>
+      <span class="priority-label">Low-Med (2)</span>
+      <span class="priority-count" id="count-prio-2">—</span>
+    </label>
+    <label class="priority-item">
+      <input type="checkbox" id="prio-3" checked onchange="scheduleFilter()">
+      <span class="priority-dot"><svg width="16" height="16"><circle cx="8" cy="8" r="6" fill="#888" opacity=".7"/></svg></span>
+      <span class="priority-label">Medium (3)</span>
+      <span class="priority-count" id="count-prio-3">—</span>
+    </label>
+    <label class="priority-item">
+      <input type="checkbox" id="prio-4" checked onchange="scheduleFilter()">
+      <span class="priority-dot"><svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="#888" opacity=".7"/></svg></span>
+      <span class="priority-label">High (4)</span>
+      <span class="priority-count" id="count-prio-4">—</span>
+    </label>
+    <label class="priority-item">
+      <input type="checkbox" id="prio-5" checked onchange="scheduleFilter()">
+      <span class="priority-dot"><svg width="26" height="26"><circle cx="13" cy="13" r="11" fill="#888" opacity=".7"/></svg></span>
+      <span class="priority-label">Critical (5)</span>
+      <span class="priority-count" id="count-prio-5">—</span>
+    </label>
+  </div>
+
+  <!-- Confidence tier -->
+  <div class="filter-section" id="confidence-section">
+    <h3>Confidence tier</h3>
+    <label class="priority-item">
+      <input type="checkbox" id="tier-confirmed" checked onchange="scheduleFilter()">
+      <span class="priority-label">✅ Confirmed</span>
+      <span class="priority-count" id="count-tier-confirmed">—</span>
+    </label>
+    <label class="priority-item">
+      <input type="checkbox" id="tier-probable" checked onchange="scheduleFilter()">
+      <span class="priority-label">🟡 Probable</span>
+      <span class="priority-count" id="count-tier-probable">—</span>
+    </label>
+    <label class="priority-item">
+      <input type="checkbox" id="tier-candidate" onchange="scheduleFilter()">
+      <span class="priority-label">⚪ Candidate</span>
+      <span class="priority-count" id="count-tier-candidate">—</span>
+    </label>
+    <div style="font-size:10.5px;color:var(--text-muted);margin-top:4px;line-height:1.4;">
+      Based on data source overlap: confirmed = 3+ sources or S19, probable = 2+ sources, candidate = 1 source.
+    </div>
+  </div>
+
+  <!-- Signals -->
+  <div class="filter-section" id="signals-section">
+    <h3>Must have signal</h3>
+    <label class="signal-item">
+      <input type="checkbox" id="sig-flooded" onchange="scheduleFilter()">
+      <span class="signal-label">🌊 Flooded before</span>
+      <span class="signal-count" id="count-sig-flooded">—</span>
+    </label>
+    <label class="signal-item">
+      <input type="checkbox" id="sig-infra" onchange="scheduleFilter()">
+      <span class="signal-label">⚠️ Critical infra nearby</span>
+      <span class="signal-count" id="count-sig-infra">—</span>
+    </label>
+    <label class="signal-item">
+      <input type="checkbox" id="sig-housing" onchange="scheduleFilter()">
+      <span class="signal-label">🏘️ Housing nearby</span>
+      <span class="signal-count" id="count-sig-housing">—</span>
+    </label>
+  </div>
+
+  <!-- Responsible authority -->
+  <div class="filter-section">
+    <h3>Responsible authority</h3>
+    <label class="signal-item" title="Crossings near EA-designated Main Rivers are likely managed by the Environment Agency, not the local authority">
+      <input type="checkbox" id="show-ea" onchange="onEaToggle()">
+      <span class="signal-label">🏛️ Show EA-managed crossings</span>
+      <span class="signal-count" id="count-ea">—</span>
+    </label>
+    <label class="signal-item" title="Crossings near Internal Drainage Board districts">
+      <input type="checkbox" id="show-idb" checked onchange="scheduleFilter()">
+      <span class="signal-label">💧 Show IDB-managed crossings</span>
+      <span class="signal-count" id="count-idb">—</span>
+    </label>
+    <label class="signal-item" title="Crossings near canals managed by Canal & River Trust">
+      <input type="checkbox" id="show-canal" checked onchange="scheduleFilter()">
+      <span class="signal-label">⛵ Show canal crossings</span>
+      <span class="signal-count" id="count-canal">—</span>
+    </label>
+    <div style="font-size:10.5px;color:var(--text-muted);margin-top:4px;line-height:1.4;">
+      EA = Environment Agency (main rivers). IDB = Internal Drainage Board. Canal = Canal &amp; River Trust.
+    </div>
+  </div>
+
+  <button id="reset-filters-btn" onclick="resetFilters()">↺ Reset filters</button>
+
+  </div><!-- end controls-body -->
+</div>
+
+<!-- ── Stats bar ── -->
+<div id="stats-bar">
+  <strong id="visible-count">—</strong> matching culvert crossings
+  <span id="ea-hidden-note" style="display:none;margin-left:8px;font-size:11px;color:var(--text-muted);">(+ <span id="ea-hidden-count">0</span> EA Main River crossings hidden)</span>
+</div>
+
+
+<script>
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Dark mode
+// ─────────────────────────────────────────────────────────────────────────────
+const TILE_LIGHT     = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}";
+const TILE_DARK      = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}";
+const TILE_LIGHT_REF = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}";
+const TILE_DARK_REF  = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}";
+let baseTile = null;
+let refTile  = null;
+let isDark = localStorage.getItem("culvertsense-dark") === "1";
+
+function applyDarkMode(dark) {
+  document.body.classList.toggle("dark", dark);
+  document.getElementById("dark-toggle").textContent = dark ? "☀️ Light" : "🌙 Dark";
+  if (baseTile) baseTile.setUrl(dark ? TILE_DARK : TILE_LIGHT);
+  if (refTile)  refTile.setUrl(dark ? TILE_DARK_REF : TILE_LIGHT_REF);
+  localStorage.setItem("culvertsense-dark", dark ? "1" : "0");
+  isDark = dark;
+}
+
+function toggleDarkMode() {
+  applyDarkMode(!isDark);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Config
+// ─────────────────────────────────────────────────────────────────────────────
+const GEOJSON_URL = "culvert_crossings.geojson?v=20260421b";
+const CONTACT_URL = "https://culvertsense.com/contact";
+const RISK_LABELS = { 3: "High", 2: "Medium" };
+const PRIORITY_LABELS = ["", "Low", "Low-Med", "Medium", "High", "Critical"];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Controls collapse
+// ─────────────────────────────────────────────────────────────────────────────
+function toggleControls() {
+  const collapsed = document.getElementById('controls').classList.toggle('collapsed');
+  document.getElementById('controls-tab').textContent = collapsed ? '‹' : '›';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Welcome modal
+// ─────────────────────────────────────────────────────────────────────────────
+document.getElementById('welcome-close-btn').addEventListener('click', function () {
+  document.getElementById('welcome-modal').style.display = 'none';
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Map init
+// ─────────────────────────────────────────────────────────────────────────────
+const map = L.map("map", { center: [53.5, -1.5], zoom: 7 });
+
+baseTile = L.tileLayer(TILE_LIGHT, {
+  attribution:
+    'Tiles &copy; <a href="https://www.esri.com/">Esri</a> | ' +
+    'Contains OS data &copy; Crown copyright and database right | ' +
+    'EA flood data &copy; Crown copyright, OGL v3',
+  maxZoom: 16,
+}).addTo(map);
+
+refTile = L.tileLayer(TILE_LIGHT_REF, { maxZoom: 16, pane: 'shadowPane' }).addTo(map);
+
+// Apply saved dark mode preference on load
+if (isDark) applyDarkMode(true);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────────────────────────────────────
+const clusterGroup = L.markerClusterGroup({
+  chunkedLoading: true,
+  chunkInterval: 100,
+  maxClusterRadius: 50,
+  // Custom dark-blue cluster icons — neutral, don't conflict with risk colour scale
+  iconCreateFunction: function (cluster) {
+    const count = cluster.getChildCount();
+    const size = count < 10 ? 28 : count < 100 ? 34 : 40;
+    return L.divIcon({
+      html: `<div class="custom-cluster" style="width:${size}px;height:${size}px;line-height:${size}px">${count}</div>`,
+      className: '',
+      iconSize: [size, size],
+    });
+  },
+});
+map.addLayer(clusterGroup);
+
+let allFeatures  = [];         // { props, ll, marker } for every loaded feature
+let initialBounds = null;      // captured after first data load for reset-view
+let activeMarkers = new Set(); // markers currently in clusterGroup
+
+const riskVisible = { high: true, medium: true };
+let showEA = false;
+
+// Totals for sidebar counts (unfiltered)
+const totalCounts = { high: 0, medium: 0, prio2: 0, prio3: 0, prio4: 0, prio5: 0 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Icon helpers
+// ─────────────────────────────────────────────────────────────────────────────
+function riskKey(score)       { return score >= 3 ? "high" : "medium"; }
+function priorityRadius(p)    { return 5 + (p - 1) * 2; }
+
+function circleIcon(colour, radius) {
+  const size = radius * 2 + 4;
+  return L.divIcon({
+    className: "",
+    html: `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+             <circle cx="${size/2}" cy="${size/2}" r="${radius}"
+                     fill="${colour}" fill-opacity="0.85" stroke="#fff" stroke-width="1.5"/>
+           </svg>`,
+    iconSize: [size, size],
+    iconAnchor: [size/2, size/2],
+    popupAnchor: [0, -(size/2)],
+  });
+}
+
+function makeIcon(key, priority, isEA) {
+  if (isEA) {
+    return circleIcon("#5b8db8", Math.max(4, priorityRadius(priority || 1) - 2));
+  }
+  return circleIcon(key === "high" ? "#d73027" : "#fc8d59", priorityRadius(priority || 1));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Popup builder
+// ─────────────────────────────────────────────────────────────────────────────
+function buildWhyRating(props) {
+  const key      = riskKey(props.risk_score);
+  const cls      = props.road_class || "";
+  const wcRaw    = props.watercourse_name || "Unnamed watercourse";
+  const isAorB   = /^[AB] Road$/i.test(cls);
+
+  // ── Flood risk sentence ──────────────────────────────────────────────────
+  const riskLine = key === "high"
+    ? "🔴 <strong>High flood risk</strong> — this crossing sits within an EA surface water flood risk zone rated High."
+    : "🟠 <strong>Medium flood risk</strong> — this crossing sits within an EA surface water flood risk zone rated Medium.";
+
+  // ── Scored factors (only show ones that are true) ────────────────────────
+  const factors = [];
+
+  if (props.flooded_before)
+    factors.push("🌊 Recorded in EA historic flood outlines — flooding has physically occurred here before.");
+
+  if (props.nearby_critical)
+    factors.push("🏥 Critical infrastructure within 500m (hospital, school, or emergency services).");
+
+  if (props.nearby_housing)
+    factors.push("🏘️ Residential housing within 100m.");
+
+  if (isAorB)
+    factors.push(`🛣️ ${cls} — higher consequence if blocked or flooded.`);
+
+  if (wcRaw !== "Unnamed watercourse")
+    factors.push(`💧 Named watercourse: <em>${wcRaw}</em>.`);
+
+  // Cap at 5, note remainder
+  const MAX = 5;
+  let factorHtml = "";
+  if (factors.length > 0) {
+    const shown    = factors.slice(0, MAX);
+    const leftover = factors.length - shown.length;
+    factorHtml = `<ul class="why-list">
+      ${shown.map(f => `<li>${f}</li>`).join("")}
+      ${leftover > 0 ? `<li class="why-more">…and ${leftover} more factor${leftover > 1 ? "s" : ""}.</li>` : ""}
+    </ul>`;
+  } else {
+    factorHtml = `<p class="why-none">Base flood zone classification only — no additional risk signals detected for this crossing.</p>`;
+  }
+
+  const eaNote = props.likely_ea_managed
+    ? `<p class="why-caveat" style="color:#2c5278;">🏛️ EA Main River — responsibility for this watercourse likely rests with the Environment Agency, not the local lead flood authority.</p>`
+    : "";
+
+  return `<div class="why-section">
+    <div class="why-heading">Why this rating?</div>
+    <p class="why-risk">${riskLine}</p>
+    ${factorHtml}
+    ${eaNote}
+    <p class="why-caveat">Risk scored on EA and OS open data only. Does not account for culvert size, age, condition or inspection history.</p>
+  </div>`;
+}
+
+function buildPopup(props) {
+  const key      = riskKey(props.risk_score);
+  const label    = RISK_LABELS[props.risk_score] || "Unknown";
+  const wcRaw    = props.watercourse_name || "Unnamed watercourse";
+  const roadRaw  = props.road_name        || "Unnamed road";
+  const cls      = props.road_class       || "";
+  const priority = props.priority_score   || props.risk_score || 1;
+  const pLabel   = PRIORITY_LABELS[priority] || priority;
+  const lat      = (+props.lat).toFixed(5);
+  const lon      = (+props.lon).toFixed(5);
+
+  // Style unnamed entries in italics grey so they're visually distinct
+  const wcDisplay   = wcRaw   === "Unnamed watercourse"
+    ? `<em style="color:#999">Unnamed watercourse</em>` : wcRaw;
+  const roadDisplay = roadRaw === "Unnamed road"
+    ? `<em style="color:#999">Unnamed road</em>` : roadRaw;
+
+  const badges = [];
+  if (props.flooded_before)  badges.push("🌊 Has flooded before");
+  if (props.nearby_critical) badges.push("⚠️ Critical infra nearby");
+  if (props.nearby_housing)  badges.push("🏘️ Housing nearby");
+
+  const eaBanner = props.likely_ea_managed
+    ? `<div style="background:#e8f0f8;border-left:3px solid #5b8db8;padding:6px 8px;margin-bottom:8px;font-size:11px;border-radius:3px;color:#2c5278;">
+        🏛️ <strong>EA Main River crossing</strong> — this site is within 50m of a statutory Main River and is likely maintained by the <strong>Environment Agency</strong>, not the local authority.
+        ${props.ea_managed_note ? '' : ''}
+       </div>` : '';
+
+  // Confidence tier badge
+  const tierColour = { confirmed: '#2ecc71', probable: '#f39c12', candidate: '#95a5a6' };
+  const tier       = props.confidence_tier || 'candidate';
+  const tierLabel  = tier.charAt(0).toUpperCase() + tier.slice(1);
+  const tierBadge  = `<span style="display:inline-block;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:600;background:${tierColour[tier]};color:#fff">${tierLabel}</span>`;
+
+  // Flood zone
+  const fz     = (props.flood_zone || 'none').toUpperCase().replace('FZ','');
+  const fzText = fz === '3' ? '<span style="color:#d73027;font-weight:600">FZ3</span>'
+               : fz === '2' ? '<span style="color:#fc8d59;font-weight:600">FZ2</span>'
+               : '<em style="color:#999">None</em>';
+
+  // Flood incidents
+  const incidents = props.flood_incidents_200m != null ? props.flood_incidents_200m : '—';
+  const incText   = incidents > 0
+    ? `<strong style="color:#d73027">${incidents}</strong> recorded within 200m`
+    : `<span style="color:#999">None recorded within 200m</span>`;
+
+  return `<div class="cs-popup">
+    ${eaBanner}
+    <h4>${wcDisplay}</h4>
+    <table>
+      <tr><td>Flood risk</td><td><span class="risk-badge risk-${key}">${label}</span></td></tr>
+      <tr><td>Priority</td><td><strong>${pLabel}</strong> (${priority}/5)</td></tr>
+      <tr><td>Confidence</td><td>${tierBadge}</td></tr>
+      <tr><td>Flood zone</td><td>${fzText}</td></tr>
+      <tr><td>Flood events</td><td>${incText}</td></tr>
+      <tr><td>Road</td><td>${roadDisplay}${cls ? ' <em>(' + cls + ')</em>' : ''}</td></tr>
+      ${badges.length ? `<tr><td colspan="2" style="padding-top:4px;line-height:1.8">${badges.join("<br>")}</td></tr>` : ""}
+      <tr><td>Coords</td><td>
+        <a class="coord-link" href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" rel="noopener" title="Open in Google Maps">${lat}, ${lon} ↗</a>
+      </td></tr>
+    </table>
+    ${buildWhyRating(props)}
+  </div>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LLFA filter
+// ─────────────────────────────────────────────────────────────────────────────
+let activeLlfa  = null;
+let lockedLlfa  = null;   // set from ?council= URL param — user cannot change
+let llfaBounds  = {};
+
+// Resolve ?council= slug → full LLFA name (case/punctuation tolerant)
+function slugify(s) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+function resolveCouncilParam(names) {
+  const param = new URLSearchParams(location.search).get('council');
+  if (!param) return null;
+  const target = slugify(param);
+  return names.find(n => slugify(n) === target) || null;
+}
+
+function buildLlfaList() {
+  const names = [...new Set(allFeatures.map(f => f.props.llfa_name).filter(n => n && n !== 'Unknown'))].sort();
+
+  // Pre-compute bounds per LLFA for zoom-to
+  for (const item of allFeatures) {
+    const n = item.props.llfa_name;
+    if (!n || n === 'Unknown') continue;
+    if (!llfaBounds[n]) llfaBounds[n] = L.latLngBounds();
+    llfaBounds[n].extend(item.ll);
+  }
+
+  const locked = resolveCouncilParam(names);
+  if (locked) {
+    lockedLlfa = locked;
+    activeLlfa = locked;
+
+    // Hide dropdown, show locked badge
+    const sel = document.getElementById('llfa-select');
+    sel.style.display = 'none';
+    const badge = document.createElement('div');
+    badge.id = 'llfa-locked-badge';
+    badge.style.cssText = 'font-size:12px;color:var(--brand);font-weight:600;padding:3px 0;';
+    badge.textContent = '🔒 ' + locked;
+    sel.parentNode.insertBefore(badge, sel);
+
+    // Update page title
+    document.title = `${locked} — CulvertSense`;
+
+    // Zoom to area
+    if (llfaBounds[locked] && llfaBounds[locked].isValid()) {
+      map.fitBounds(llfaBounds[locked], { padding: [40, 40] });
+    }
+  } else {
+    const sel = document.getElementById('llfa-select');
+    sel.innerHTML = `<option value="">All authorities (${names.length})</option>` +
+      names.map(n => `<option value="${n}">${n}</option>`).join('');
+    sel.disabled = false;
+  }
+}
+
+function updateCounts() {
+  // Compute counts scoped to the active LLFA (or all if none selected)
+  const subset = activeLlfa
+    ? allFeatures.filter(f => f.props.llfa_name === activeLlfa)
+    : allFeatures;
+
+  const c = { high: 0, medium: 0, prio2: 0, prio3: 0, prio4: 0, prio5: 0,
+               flooded: 0, infra: 0, housing: 0, ea: 0, idb: 0, canal: 0,
+               tier_confirmed: 0, tier_probable: 0, tier_candidate: 0 };
+  for (const { props: p } of subset) {
+    const k = riskKey(p.risk_score);
+    c[k]++;
+    const pv = p.priority_score || 1;
+    if      (pv <= 2) c.prio2++;
+    else if (pv === 3) c.prio3++;
+    else if (pv === 4) c.prio4++;
+    else               c.prio5++;
+    if (p.flooded_before)    c.flooded++;
+    if (p.nearby_critical)   c.infra++;
+    if (p.nearby_housing)    c.housing++;
+    if (p.likely_ea_managed)  c.ea++;
+    if (p.likely_idb_managed) c.idb++;
+    if (p.likely_canal)       c.canal++;
+    const tier = p.confidence_tier || 'candidate';
+    if      (tier === 'confirmed')  c.tier_confirmed++;
+    else if (tier === 'probable')   c.tier_probable++;
+    else                            c.tier_candidate++;
+  }
+
+  document.getElementById('count-high').textContent    = c.high.toLocaleString();
+  document.getElementById('count-medium').textContent  = c.medium.toLocaleString();
+  document.getElementById('count-prio-2').textContent  = c.prio2.toLocaleString();
+  document.getElementById('count-prio-3').textContent  = c.prio3.toLocaleString();
+  document.getElementById('count-prio-4').textContent  = c.prio4.toLocaleString();
+  document.getElementById('count-prio-5').textContent  = c.prio5.toLocaleString();
+  document.getElementById('count-sig-flooded').textContent = c.flooded.toLocaleString();
+  document.getElementById('count-sig-infra').textContent   = c.infra.toLocaleString();
+  document.getElementById('count-sig-housing').textContent = c.housing.toLocaleString();
+  document.getElementById('count-ea').textContent          = c.ea.toLocaleString();
+  document.getElementById('count-idb').textContent         = c.idb.toLocaleString();
+  document.getElementById('count-canal').textContent       = c.canal.toLocaleString();
+  document.getElementById('count-tier-confirmed').textContent = c.tier_confirmed.toLocaleString();
+  document.getElementById('count-tier-probable').textContent  = c.tier_probable.toLocaleString();
+  document.getElementById('count-tier-candidate').textContent = c.tier_candidate.toLocaleString();
+
+}
+
+function onLlfaSelect() {
+  const sel = document.getElementById('llfa-select');
+  activeLlfa = sel.value || null;
+  if (activeLlfa && llfaBounds[activeLlfa] && llfaBounds[activeLlfa].isValid()) {
+    map.fitBounds(llfaBounds[activeLlfa], { padding: [40, 40] });
+  }
+  updateCounts();
+  updateReviewBar();
+  applyFilters();
+}
+
+function clearLlfaFilter() {
+  activeLlfa = lockedLlfa || null;  // respect lock
+  const sel = document.getElementById('llfa-select');
+  if (sel) sel.value = activeLlfa || '';
+  updateCounts();
+  applyFilters();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Debounce — scheduleFilter shows "…" immediately; applyFilters runs 120ms later
+// ─────────────────────────────────────────────────────────────────────────────
+let _filterTimer = null;
+function scheduleFilter() {
+  clearTimeout(_filterTimer);
+  document.getElementById("visible-count").textContent = "…";
+  _filterTimer = setTimeout(applyFilters, 120);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Filter logic
+// ─────────────────────────────────────────────────────────────────────────────
+function getActiveFilters() {
+  return {
+    risk: {
+      high:   riskVisible.high,
+      medium: riskVisible.medium,
+    },
+    prio: {
+      2: document.getElementById("prio-2").checked,
+      3: document.getElementById("prio-3").checked,
+      4: document.getElementById("prio-4").checked,
+      5: document.getElementById("prio-5").checked,
+    },
+    sig: {
+      flooded: document.getElementById("sig-flooded").checked,
+      infra:   document.getElementById("sig-infra").checked,
+      housing: document.getElementById("sig-housing").checked,
+    },
+    tier: {
+      confirmed: document.getElementById("tier-confirmed").checked,
+      probable:  document.getElementById("tier-probable").checked,
+      candidate: document.getElementById("tier-candidate").checked,
+    },
+  };
+}
+
+function matchesFilters(props, f) {
+  // EA / IDB / canal crossings hidden unless their toggle is on
+  if (props.likely_ea_managed  && !showEA)                                          return false;
+  if (props.likely_idb_managed && !document.getElementById("show-idb").checked)    return false;
+  if (props.likely_canal       && !document.getElementById("show-canal").checked)  return false;
+
+  const key = riskKey(props.risk_score);
+  if (!f.risk[key]) return false;
+
+  const p = props.priority_score || 1;
+  const prioKey = p <= 2 ? 2 : p;
+  if (!f.prio[prioKey]) return false;
+
+  if (f.sig.flooded && !props.flooded_before)  return false;
+  if (f.sig.infra   && !props.nearby_critical) return false;
+  if (f.sig.housing && !props.nearby_housing)  return false;
+
+  const tier = props.confidence_tier || 'candidate';
+  if (tier === 'confirmed' && !f.tier.confirmed) return false;
+  if (tier === 'probable'  && !f.tier.probable)  return false;
+  if (tier === 'candidate' && !f.tier.candidate) return false;
+
+  if (activeLlfa && props.llfa_name !== activeLlfa) return false;
+
+  return true;
+}
+
+function isDefaultState() {
+  if (!riskVisible.high || !riskVisible.medium)        return false;
+  if (!document.getElementById("prio-2").checked)      return false;
+  if (!document.getElementById("prio-3").checked)      return false;
+  if (!document.getElementById("prio-4").checked)      return false;
+  if (!document.getElementById("prio-5").checked)      return false;
+  if (document.getElementById("sig-flooded").checked)  return false;
+  if (document.getElementById("sig-infra").checked)    return false;
+  if (document.getElementById("sig-housing").checked)  return false;
+  if (document.getElementById("show-ea").checked)                        return false;
+  if (!document.getElementById("show-idb").checked)                      return false;
+  if (!document.getElementById("show-canal").checked)                    return false;
+  // candidate unchecked is the default state — only a deviation if confirmed or probable is unchecked
+  if (!document.getElementById("tier-confirmed").checked) return false;
+  if (!document.getElementById("tier-probable").checked)  return false;
+  if (activeLlfa) return false;
+  return true;
+}
+
+function updateFilterIndicators() {
+  const active = !isDefaultState();
+  document.getElementById("controls").classList.toggle("filters-active", active);
+  document.getElementById("filter-active-dot").classList.toggle("visible", active);
+}
+
+// Delta-based layer update: only add/remove markers that actually changed
+function applyFilters() {
+  const f = getActiveFilters();
+  const toAdd    = [];
+  const toRemove = [];
+  let visible = 0;
+
+  for (const item of allFeatures) {
+    const matches    = matchesFilters(item.props, f);
+    const inCurrent  = activeMarkers.has(item.marker);
+
+    if (matches) {
+      visible++;
+      if (!inCurrent) toAdd.push(item.marker);
+    } else {
+      if (inCurrent)  toRemove.push(item.marker);
+    }
+  }
+
+  if (toRemove.length) clusterGroup.removeLayers(toRemove);
+  if (toAdd.length)    clusterGroup.addLayers(toAdd);
+
+  for (const m of toRemove) activeMarkers.delete(m);
+  for (const m of toAdd)    activeMarkers.add(m);
+
+  // Animate the count change
+  const el = document.getElementById("visible-count");
+  el.textContent = visible.toLocaleString();
+  el.classList.remove("flash");
+  void el.offsetWidth; // force reflow to restart animation
+  el.classList.add("flash");
+
+  // EA hidden note in stats bar
+  if (!showEA) {
+    const eaTotal = (activeLlfa
+      ? allFeatures.filter(item => item.props.llfa_name === activeLlfa)
+      : allFeatures
+    ).filter(item => item.props.likely_ea_managed).length;
+    if (eaTotal > 0) {
+      document.getElementById("ea-hidden-count").textContent = eaTotal.toLocaleString();
+      document.getElementById("ea-hidden-note").style.display = "";
+    } else {
+      document.getElementById("ea-hidden-note").style.display = "none";
+    }
+  } else {
+    document.getElementById("ea-hidden-note").style.display = "none";
+  }
+
+  updateFilterIndicators();
+  updateReviewBar();
+  saveStateToUrl();
+}
+
+let currentOpenFeature = null;   // item currently shown in a popup
+const showUnreviewedOnly = false;
+
+function updateReviewBar() {} // no-op in council map
+
+// Keyboard shortcuts (Escape only)
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') { map.closePopup(); }
+});
+
+function applyReviewState() {} // no-op in council map
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EA toggle
+// ─────────────────────────────────────────────────────────────────────────────
+function onEaToggle() {
+  showEA = document.getElementById("show-ea").checked;
+  scheduleFilter();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Risk toggle
+// ─────────────────────────────────────────────────────────────────────────────
+function toggleRisk(key) {
+  riskVisible[key] = !riskVisible[key];
+  const el = document.getElementById(`toggle-${key}`);
+  el.classList.toggle("disabled", !riskVisible[key]);
+  el.setAttribute("aria-checked", String(riskVisible[key]));
+  scheduleFilter();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reset filters
+// ─────────────────────────────────────────────────────────────────────────────
+function resetFilters() {
+  riskVisible.high   = true;
+  riskVisible.medium = true;
+
+  ["high", "medium"].forEach(key => {
+    const el = document.getElementById(`toggle-${key}`);
+    el.classList.remove("disabled");
+    el.setAttribute("aria-checked", "true");
+  });
+
+  ["2", "3", "4", "5"].forEach(p => {
+    document.getElementById(`prio-${p}`).checked = true;
+  });
+
+  document.getElementById("sig-flooded").checked = false;
+  document.getElementById("sig-infra").checked   = false;
+  document.getElementById("sig-housing").checked = false;
+  document.getElementById("show-ea").checked    = false;
+  document.getElementById("show-idb").checked   = true;
+  document.getElementById("show-canal").checked = true;
+  showEA = false;
+
+  document.getElementById("tier-confirmed").checked = true;
+  document.getElementById("tier-probable").checked  = true;
+  document.getElementById("tier-candidate").checked = false;
+
+  clearLlfaFilter();  // also calls applyFilters
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// URL state persistence
+// ─────────────────────────────────────────────────────────────────────────────
+function saveStateToUrl() {
+  const params = new URLSearchParams();
+  if (!riskVisible.high)   params.set("rh", "0");
+  if (!riskVisible.medium) params.set("rm", "0");
+  const prioOff = ["2","3","4","5"].filter(p => !document.getElementById("prio-" + p).checked);
+  if (prioOff.length) params.set("p", prioOff.join(","));
+  if (document.getElementById("sig-flooded").checked) params.set("sf", "1");
+  if (document.getElementById("sig-infra").checked)   params.set("si", "1");
+  if (document.getElementById("sig-housing").checked) params.set("sh", "1");
+  const str = params.toString();
+  history.replaceState(null, "", str ? "#" + str : location.pathname + location.search);
+}
+
+function restoreStateFromUrl() {
+  const hash = location.hash.replace(/^#/, "");
+  if (!hash) return;
+  try {
+    const params = new URLSearchParams(hash);
+
+    if (params.get("rh") === "0") {
+      riskVisible.high = false;
+      const el = document.getElementById("toggle-high");
+      el.classList.add("disabled");
+      el.setAttribute("aria-checked", "false");
+    }
+    if (params.get("rm") === "0") {
+      riskVisible.medium = false;
+      const el = document.getElementById("toggle-medium");
+      el.classList.add("disabled");
+      el.setAttribute("aria-checked", "false");
+    }
+
+    const prioOff = params.get("p");
+    if (prioOff) {
+      prioOff.split(",").forEach(p => {
+        const el = document.getElementById("prio-" + p);
+        if (el) el.checked = false;
+      });
+    }
+
+    if (params.get("sf") === "1") document.getElementById("sig-flooded").checked = true;
+    if (params.get("si") === "1") document.getElementById("sig-infra").checked   = true;
+    if (params.get("sh") === "1") document.getElementById("sig-housing").checked = true;
+  } catch (e) {
+    console.warn("Could not restore URL state:", e);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Custom map controls
+// ─────────────────────────────────────────────────────────────────────────────
+const ResetViewControl = L.Control.extend({
+  options: { position: "topleft" },
+  onAdd: function () {
+    const btn = L.DomUtil.create("button", "custom-map-ctrl");
+    btn.innerHTML = "⌂ Reset view";
+    btn.title = "Fit map to all data";
+    L.DomEvent.on(btn, "click", function (e) {
+      L.DomEvent.stopPropagation(e);
+      if (initialBounds) map.fitBounds(initialBounds, { padding: [30, 30] });
+    });
+    return btn;
+  },
+});
+map.addControl(new ResetViewControl());
+
+const LocateControl = L.Control.extend({
+  options: { position: "topleft" },
+  onAdd: function () {
+    const btn = L.DomUtil.create("button", "custom-map-ctrl");
+    btn.innerHTML = "📍 My location";
+    btn.title = "Zoom to my current location";
+    L.DomEvent.on(btn, "click", function (e) {
+      L.DomEvent.stopPropagation(e);
+      if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        pos => map.setView([pos.coords.latitude, pos.coords.longitude], 13),
+        err => alert("Could not get your location: " + err.message)
+      );
+    });
+    return btn;
+  },
+});
+map.addControl(new LocateControl());
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Load GeoJSON — streaming with progress feedback
+// ─────────────────────────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const response = await fetch(GEOJSON_URL);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const contentLength = +response.headers.get("Content-Length");
+    const reader        = response.body.getReader();
+    const progressEl    = document.getElementById("loading-progress");
+    let received = 0;
+    const chunks = [];
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      received += value.length;
+      if (contentLength) {
+        const pct = Math.round(received / contentLength * 100);
+        const mb  = (received / 1048576).toFixed(1);
+        progressEl.textContent = `${pct}% (${mb} MB)`;
+      } else {
+        progressEl.textContent = `${(received / 1048576).toFixed(1)} MB received…`;
+      }
+    }
+
+    const blob = new Blob(chunks);
+    const text = await blob.text();
+    const data = JSON.parse(text);
+
+    const bounds = L.latLngBounds();
+
+    data.features.forEach(f => {
+      const p   = f.properties;
+      // Never show false positives — filtered before entering allFeatures
+      if (p.review_status === "false_positive") return;
+      const key = riskKey(p.risk_score);
+      if (key !== "high" && key !== "medium") return;
+
+      const coords    = f.geometry.coordinates;
+      const ll        = L.latLng(coords[1], coords[0]);
+      const iconRisk = makeIcon(key, p.priority_score, p.likely_ea_managed);
+      const marker   = L.marker(ll, { icon: iconRisk })
+                        .bindPopup(buildPopup(p), { maxWidth: 320 });
+
+      const featureObj = { props: p, ll, marker, iconRisk };
+
+      marker.on('popupopen', e => {
+        currentOpenFeature = featureObj;
+        applyReviewState(p.crossing_id, e.popup.getElement());
+      });
+      marker.on('popupclose', () => {
+        if (currentOpenFeature && currentOpenFeature.marker === marker) {
+          currentOpenFeature = null;
+        }
+      });
+
+      allFeatures.push(featureObj);
+
+      // Tally unfiltered totals
+      totalCounts[key]++;
+      const pv = p.priority_score || 1;
+      if      (pv <= 2) totalCounts.prio2++;
+      else if (pv === 3) totalCounts.prio3++;
+      else if (pv === 4) totalCounts.prio4++;
+      else               totalCounts.prio5++;
+
+      bounds.extend(ll);
+    });
+
+    // Build LLFA list and set initial counts (both use allFeatures)
+    buildLlfaList();
+    updateCounts();
+    updateReviewBar();
+
+    if (bounds.isValid()) {
+      initialBounds = bounds;
+      map.fitBounds(bounds, { padding: [30, 30] });
+    }
+
+    // Restore any saved URL filter state, then render
+    restoreStateFromUrl();
+    applyFilters(); // delta-based: adds all matching markers to clusterGroup
+
+    document.getElementById("loading").style.display = "none";
+
+  } catch (err) {
+    console.error("Failed to load GeoJSON:", err);
+    document.getElementById("loading").innerHTML =
+      `<p style="color:#c0392b;font-size:14px;">
+        ⚠ Could not load culvert_crossings.geojson<br>
+        <small style="color:#888">Run the pipeline first, or check the file is in the same directory as this HTML.</small>
+      </p>`;
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>

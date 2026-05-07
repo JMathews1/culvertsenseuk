@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CulvertSense · Real-Time Culvert Monitoring for UK Councils</title>
-<meta name="description" content="CulvertSense provides real-time culvert monitoring for Lead Local Flood Authorities. Know before it floods: LoRaWAN sensors, instant alerts, Section 19-ready data.">
+<title>CulvertSense · Risk-Scored Culvert Register & Monitoring for UK Councils</title>
+<meta name="description" content="CulvertSense detects every culvert crossing in your authority area, scores each one for flood risk and blockage likelihood, and gives your team a prioritised register — with LoRaWAN monitoring for your highest-priority sites.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
@@ -1040,13 +1040,424 @@
     line-height: 1.8;
   }
 
+  /* ── HERO SCREENSHOT PLACEHOLDER ── */
+  .hero-screenshot-wrap {
+    width: 100%;
+    max-width: 1000px;
+    margin: 8px auto 0;
+    padding: 0 24px;
+    position: relative;
+    z-index: 10;
+    animation: fade-up 0.8s 0.5s ease both;
+  }
+  .hero-screenshot {
+    background: linear-gradient(160deg, #102a3e, #0a1d2c);
+    border: 1px solid rgba(74,155,196,0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 28px 80px rgba(0,0,0,0.45), 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .browser-bar {
+    background: rgba(8,18,28,0.85);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+  }
+  .browser-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+  .browser-dot.r { background: #ed6a5e; }
+  .browser-dot.y { background: #f4be4f; }
+  .browser-dot.g { background: #61c554; }
+  .browser-url {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 4px;
+    padding: 5px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: rgba(168,212,232,0.5);
+    margin-left: 8px;
+    text-align: center;
+  }
+  .browser-frame {
+    aspect-ratio: 16 / 9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+      radial-gradient(circle at 28% 32%, rgba(74,155,196,0.22), transparent 55%),
+      radial-gradient(circle at 78% 70%, rgba(212,134,10,0.14), transparent 58%),
+      radial-gradient(circle at 60% 30%, rgba(42,122,74,0.10), transparent 50%),
+      linear-gradient(160deg, #112a39, #07111c);
+    color: rgba(168,212,232,0.42);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .hero-screenshot-cap {
+    text-align: center;
+    margin-top: 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: rgba(168,212,232,0.45);
+  }
+
+  /* ── REGISTER TIERS & CLASSIFY ── */
+  .register-tiers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 36px;
+  }
+  .register-tier {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 28px;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .register-tier:hover { transform: translateY(-3px); }
+  .register-tier.featured {
+    border-color: rgba(74,155,196,0.3);
+    background: rgba(74,155,196,0.07);
+  }
+  .register-tier-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--water);
+    margin-bottom: 10px;
+    display: block;
+  }
+  .register-tier-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    margin-bottom: 14px;
+    color: var(--white);
+  }
+  .register-tier-body {
+    font-size: 14px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.6);
+    font-weight: 300;
+  }
+
+  .classify-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .classify-row {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 16px 18px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+  }
+  .classify-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 10px;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+    margin-top: 2px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .classify-pill.confirmed { background: rgba(42,122,74,0.15);  color: #7fd4a0;        border: 1px solid rgba(42,122,74,0.25); }
+  .classify-pill.likely    { background: rgba(74,155,196,0.15); color: var(--foam);    border: 1px solid rgba(74,155,196,0.25); }
+  .classify-pill.bridge    { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.1); }
+  .classify-pill.surveyed  { background: rgba(212,134,10,0.15); color: #f5c842;        border: 1px solid rgba(212,134,10,0.25); }
+  .classify-text {
+    font-size: 13px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.62);
+    font-weight: 300;
+  }
+
+  /* ── RISK SCORING ── */
+  .risk { background: var(--mist); color: var(--text); }
+  .risk .section-tag { color: var(--tide); }
+  .risk .section-title { color: var(--text); }
+  .risk-inner { max-width: 1100px; margin: 0 auto; }
+  .risk-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: end;
+    margin-bottom: 48px;
+  }
+  .risk-body { color: var(--text-2); }
+  .risk-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+  .risk-card {
+    background: white;
+    border-radius: 14px;
+    padding: 28px;
+    border-top: 3px solid var(--tide);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .risk-card:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(13,31,45,0.08); }
+  .risk-card.consequence { border-top-color: var(--amber); }
+  .risk-card-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--tide);
+    margin-bottom: 10px;
+    display: block;
+  }
+  .risk-card.consequence .risk-card-tag { color: var(--amber); }
+  .risk-card-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  .risk-card-body {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-2);
+    font-weight: 300;
+  }
+  .risk-formula {
+    text-align: center;
+    font-size: 16px;
+    color: var(--text-2);
+    line-height: 1.8;
+    max-width: 760px;
+    margin: 0 auto 36px;
+    font-weight: 300;
+  }
+  .risk-formula em { color: var(--tide); font-style: normal; font-weight: 500; }
+
+  .risk-example {
+    background: white;
+    border-radius: 14px;
+    padding: 28px;
+    max-width: 520px;
+    margin: 0 auto;
+    border-left: 4px solid #c04a20;
+    box-shadow: 0 18px 48px rgba(13,31,45,0.10);
+  }
+  .risk-example-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .risk-score-num {
+    font-family: 'Instrument Serif', serif;
+    font-size: 44px;
+    color: #c04a20;
+    line-height: 1;
+  }
+  .risk-score-num small {
+    font-size: 18px;
+    color: var(--text-2);
+    font-style: italic;
+    font-family: 'Instrument Serif', serif;
+  }
+  .risk-score-cap {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--text-2);
+    text-transform: uppercase;
+    display: block;
+    margin-top: 6px;
+  }
+  .risk-score-band {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    background: rgba(192,74,32,0.1);
+    color: #c04a20;
+    padding: 5px 12px;
+    border-radius: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    align-self: center;
+    white-space: nowrap;
+  }
+  .risk-multiply {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-2);
+    margin-bottom: 16px;
+    letter-spacing: 0.04em;
+  }
+  .risk-multiply strong { color: var(--text); font-weight: 500; }
+  .risk-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .risk-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    background: var(--mist);
+    color: var(--tide);
+    padding: 4px 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(42,100,150,0.15);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── TERRAIN SCREENING ── */
+  .terrain { background: var(--navy); color: var(--white); }
+  .terrain .section-tag { color: var(--water); }
+  .terrain-inner { max-width: 1100px; margin: 0 auto; }
+  .terrain-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: end;
+    margin-bottom: 48px;
+  }
+  .terrain-body { color: rgba(255,255,255,0.6); }
+
+  .terrain-chart {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 24px;
+    margin: 0 auto 36px;
+    max-width: 880px;
+  }
+  .terrain-chart svg { width: 100%; height: auto; display: block; }
+
+  .terrain-prose {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px 36px;
+    max-width: 980px;
+    margin: 0 auto;
+  }
+  .terrain-prose p {
+    font-size: 14px;
+    line-height: 1.75;
+    color: rgba(255,255,255,0.6);
+    font-weight: 300;
+  }
+  .terrain-prose p strong {
+    color: var(--foam);
+    font-weight: 500;
+    display: block;
+    margin-bottom: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .terrain-caveat {
+    margin: 32px auto 0;
+    font-size: 12px;
+    color: rgba(255,255,255,0.32);
+    text-align: center;
+    line-height: 1.65;
+    font-weight: 300;
+    max-width: 720px;
+    font-style: italic;
+  }
+
+  /* ── MONITORING INTRO ── */
+  .monitoring-intro {
+    text-align: center;
+    max-width: 760px;
+    margin: 0 auto 64px;
+  }
+  .monitoring-intro .section-tag { color: var(--water); display: block; margin-bottom: 16px; }
+  .monitoring-intro .section-title { color: var(--white); margin-bottom: 18px; }
+  .monitoring-intro p {
+    font-size: 16px;
+    line-height: 1.75;
+    color: rgba(255,255,255,0.65);
+    font-weight: 300;
+  }
+
+  /* ── ROI STATS ── */
+  .roi-narrative {
+    background: white;
+    border-radius: 14px;
+    padding: 32px;
+    max-width: 880px;
+    margin: 0 auto 32px;
+    border-left: 4px solid #c04a20;
+    box-shadow: 0 14px 44px rgba(13,31,45,0.06);
+  }
+  .roi-narrative p {
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--text-2);
+    font-weight: 300;
+  }
+  .roi-narrative p strong { color: var(--text); font-weight: 500; }
+  .roi-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 880px;
+    margin: 0 auto;
+  }
+  .roi-stat {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    border-top: 3px solid var(--tide);
+  }
+  .roi-stat .num {
+    font-family: 'Instrument Serif', serif;
+    font-size: 28px;
+    color: var(--tide);
+    display: block;
+    line-height: 1.1;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  .roi-stat p {
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.55;
+    font-weight: 300;
+  }
+
+  /* ── DATA SOURCES BANNER ── */
+  .data-sources {
+    background: rgba(0,0,0,0.4);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 18px 48px;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: rgba(168,212,232,0.45);
+    line-height: 1.7;
+  }
+
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
     nav { padding: 20px 24px; }
     section { padding: 64px 24px; }
     .problem-grid, .system-header, .why-header, .pilot-header,
-    .roi-header, .detection-header, .register-header { grid-template-columns: 1fr; gap: 32px; }
+    .roi-header, .detection-header, .register-header,
+    .risk-header, .terrain-header { grid-template-columns: 1fr; gap: 32px; }
     .register .fact-cards { grid-template-columns: 1fr 1fr; }
+    .register-tiers, .classify-grid, .risk-grid, .terrain-prose, .roi-stats { grid-template-columns: 1fr; }
     .nodes { grid-template-columns: repeat(2, 1fr); gap: 24px; }
     .compare-grid, .phases { grid-template-columns: 1fr; }
     .fact-cards { grid-template-columns: 1fr; }
@@ -1057,6 +1468,8 @@
     .detection-card.dual { grid-template-columns: 1fr; }
     .form-row { grid-template-columns: 1fr; }
     .procurement-note { flex-direction: column; gap: 12px; }
+    .data-sources { padding: 16px 20px; }
+    .hero-screenshot-wrap { padding: 0 16px; }
   }
 
   @media (max-width: 480px) {
@@ -1141,19 +1554,33 @@
   </nav>
 
   <div class="hero-content">
-    <span class="hero-tag">LoRaWAN · Early Warning · Culvert Register</span>
-    <h1 class="hero-title">Know before<br>it <em>floods.</em></h1>
-    <p class="hero-sub">Real-time culvert monitoring for UK councils. Continuous water-level sensors give operations teams early warning before overtopping, not a phone call after the road closes.</p>
+    <span class="hero-tag">Detection · Risk Scoring · Continuous Monitoring</span>
+    <h1 class="hero-title">Every culvert.<br><em>Scored.</em> Prioritised.</h1>
+    <p class="hero-sub">CulvertSense detects culvert crossings across your authority area, scores each one for flood risk and blockage likelihood, and gives your team a prioritised register — so you know where to look before the next storm, not after.</p>
     <div class="hero-ctas">
-      <a href="#system" class="btn-primary">See how it works</a>
-      <a href="#contact" class="btn-ghost">Request a pilot</a>
+      <a href="#contact" class="btn-primary">See your authority area</a>
+      <a href="#register" class="btn-ghost">How it works</a>
+    </div>
+
+    <div class="hero-screenshot-wrap">
+      <!-- TODO: Add hero screenshot or demo video here -->
+      <div class="hero-screenshot">
+        <div class="browser-bar">
+          <span class="browser-dot r"></span>
+          <span class="browser-dot y"></span>
+          <span class="browser-dot g"></span>
+          <span class="browser-url">app.culvertsense.com / register</span>
+        </div>
+        <div class="browser-frame">Risk-scored culvert map preview</div>
+      </div>
+      <p class="hero-screenshot-cap">Risk-scored culvert map — real data, live platform</p>
     </div>
   </div>
 
   <div class="hero-stats">
-    <div class="stat"><span class="stat-n">£450M+</span><span class="stat-l">insured flood losses, Storm Babet Oct 2023</span></div>
-    <div class="stat"><span class="stat-n">200,000+</span><span class="stat-l">properties at surface water flood risk in England</span></div>
-    <div class="stat"><span class="stat-n">&lt; 2 min</span><span class="stat-l">alert latency from sensor to inbox</span></div>
+    <div class="stat"><span class="stat-n">27,000+</span><span class="stat-l">culvert crossings detected nationally</span></div>
+    <div class="stat"><span class="stat-n">0–100</span><span class="stat-l">risk score per culvert</span></div>
+    <div class="stat"><span class="stat-n">152</span><span class="stat-l">LLFAs across England</span></div>
   </div>
 </section>
 
@@ -1309,61 +1736,194 @@
     <div class="register-header">
       <div>
         <span class="section-tag">The Register</span>
-        <h2 class="section-title">No register?<br>Start with 27,000 crossings.</h2>
+        <h2 class="section-title">Your culvert register.<br>Pre-built and risk-scored.</h2>
       </div>
-      <p class="section-body" style="color:rgba(255,255,255,0.6);">Most LLFAs have no culvert inventory. We've built one, pre-populated from open data, risk-scored, and filtered to your authority area.</p>
+      <p class="section-body" style="color:rgba(255,255,255,0.6);">Two tiers of detection — a national open-data baseline you can view today, and a deeper survey-grade analysis when you partner with us.</p>
     </div>
 
-    <p class="register-body">We cross-reference OS Open Roads, OS Open Rivers, the EA Flood Map for Planning, recorded flood outlines, Section 19 investigation areas, EA Main Rivers, and IDB boundaries to identify every probable road–watercourse crossing in England. The output is a structured register of approximately 27,000 culverts, each one scored and prioritised so your team knows where to look first.</p>
-
-    <div class="fact-cards">
-      <div class="fact-card">
-        <span class="num">~27,000</span>
-        <p>probable crossings identified across England. The first structured starting point for councils with no existing register.</p>
+    <div class="register-tiers">
+      <div class="register-tier">
+        <span class="register-tier-tag">National baseline</span>
+        <h3 class="register-tier-title">Available today</h3>
+        <p class="register-tier-body">We've identified 27,000+ road–watercourse crossings across England from open datasets (OS, EA), risk-scored by flood probability, infrastructure proximity, and flood history. Your authority area is ready to view today.</p>
       </div>
-      <div class="fact-card">
-        <span class="num">Risk-scored</span>
-        <p>by flood zone, recorded flood history, and proximity to housing and critical infrastructure. Highest-priority sites surface to the top.</p>
-      </div>
-      <div class="fact-card">
-        <span class="num">Authority-tagged</span>
-        <p>each crossing flagged by responsible body (EA, IDB, Canal, LLFA), so jurisdictional ambiguity is resolved before fieldwork begins.</p>
+      <div class="register-tier featured">
+        <span class="register-tier-tag">Detailed analysis</span>
+        <h3 class="register-tier-title">When you work with us</h3>
+        <p class="register-tier-body">We run your area through our full detection pipeline using OS NGD Water Network — including buried and culverted sections that free data misses. Pilot councils see a 5–10× increase in detected crossings, each classified as culvert or bridge by OS survey data.</p>
       </div>
     </div>
 
     <div class="detection-card" style="background:rgba(74,155,196,0.06);border-color:rgba(74,155,196,0.2);">
-      <div class="detection-card-title" style="margin-bottom:24px;">How crossings are classified</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;">
-        <div>
-          <div class="dual-col-title pro">Confirmed</div>
-          <p class="detection-card-body" style="margin-bottom:0;">Road and watercourse intersect with corroborating EA or IDB asset data.</p>
+      <div class="detection-card-title" style="margin-bottom:20px;">How crossings are classified</div>
+      <div class="classify-grid">
+        <div class="classify-row">
+          <span class="classify-pill confirmed">Confirmed culvert</span>
+          <p class="classify-text">OS NGD Underground classification + surveyed entrance points.</p>
         </div>
-        <div>
-          <div class="dual-col-title" style="color:rgba(255,255,255,0.45);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.08);">Probable</div>
-          <p class="detection-card-body" style="margin-bottom:0;">Geometry intersects but no asset record; field verification recommended.</p>
+        <div class="classify-row">
+          <span class="classify-pill likely">Likely culvert</span>
+          <p class="classify-text">NGD Underground crossing without surveyed points.</p>
         </div>
-        <div>
-          <div class="dual-col-title con">Candidate</div>
-          <p class="detection-card-body" style="margin-bottom:0;">Likely crossing inferred from terrain and drainage patterns; lower confidence.</p>
+        <div class="classify-row">
+          <span class="classify-pill bridge">Bridge or ford</span>
+          <p class="classify-text">NGD Surface Level crossing.</p>
+        </div>
+        <div class="classify-row">
+          <span class="classify-pill surveyed">Surveyed buried</span>
+          <p class="classify-text">OS-surveyed culvert entrance with no road–water intersection — urban and Victorian assets that intersection-based detection misses.</p>
         </div>
       </div>
     </div>
 
-    <p class="register-delivery">Delivered as a GeoJSON file for QGIS, ArcGIS, or any GIS stack, or as an interactive web map filtered to your authority boundary. No procurement of a new platform required.</p>
+    <p class="register-delivery">Delivered as an interactive web map filtered to your authority boundary, or exported as GeoJSON for QGIS, ArcGIS, or any GIS stack. No procurement of a new platform required.</p>
 
     <a href="#contact" class="btn-ghost" style="display:inline-block;margin-top:32px;">See the register for your authority area</a>
   </div>
 </section>
 
-<!-- SYSTEM -->
+<!-- RISK SCORING -->
+<section class="risk" id="risk-scoring">
+  <div class="risk-inner">
+    <div class="risk-header">
+      <div>
+        <span class="section-tag">Risk Scoring</span>
+        <h2 class="section-title">0–100 risk score.<br>Likelihood × Consequence.</h2>
+      </div>
+      <p class="section-body risk-body">Every culvert in your register is scored on two independent axes — how likely it is to fail, and how bad the consequences would be if it did — then combined into a single number you can sort and prioritise by.</p>
+    </div>
+
+    <div class="risk-grid">
+      <div class="risk-card">
+        <span class="risk-card-tag">Blockage likelihood</span>
+        <h3 class="risk-card-title">How likely to fail</h3>
+        <p class="risk-card-body">We analyse upstream land cover, channel gradient, vegetation canopy, inlet aspect, watercourse size, pipe gradient, and historical flood evidence to estimate how likely each culvert is to block.</p>
+      </div>
+      <div class="risk-card consequence">
+        <span class="risk-card-tag">Flood consequence</span>
+        <h3 class="risk-card-title">How bad if it fails</h3>
+        <p class="risk-card-body">EA surface water flood probability, proximity to housing, schools, hospitals, emergency services, road classification, and flood history — combined to estimate the impact of a failure.</p>
+      </div>
+    </div>
+
+    <p class="risk-formula">The two scores multiply into a single <em>0–100 risk number</em>. Sort your entire register by score and work down the list — no ambiguity about which culvert to inspect first.</p>
+
+    <div class="risk-example">
+      <div class="risk-example-top">
+        <div>
+          <div class="risk-score-num">83<small> /100</small></div>
+          <span class="risk-score-cap">Risk score</span>
+        </div>
+        <span class="risk-score-band">Critical</span>
+      </div>
+      <p class="risk-multiply">Likelihood <strong>8.7</strong>/10 &nbsp;×&nbsp; Consequence <strong>9.5</strong>/10</p>
+      <div class="risk-tags">
+        <span class="risk-tag">Woodland upstream</span>
+        <span class="risk-tag">Steep gradient</span>
+        <span class="risk-tag">South-facing inlet</span>
+        <span class="risk-tag">Housing ≤ 50m</span>
+        <span class="risk-tag">Surface water: High</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TERRAIN SCREENING -->
+<section class="terrain" id="terrain">
+  <div class="terrain-inner">
+    <div class="terrain-header">
+      <div>
+        <span class="section-tag">Terrain Screening</span>
+        <h2 class="section-title">LiDAR terrain analysis<br>at every crossing.</h2>
+      </div>
+      <p class="section-body terrain-body">Using Environment Agency 1m LiDAR data, we analyse the terrain at each culvert crossing to estimate channel depth, embankment height, and pipe gradient — identifying potential structural issues without a site visit.</p>
+    </div>
+
+    <div class="terrain-chart">
+      <!-- TODO: Replace with real cross-section SVG from product data -->
+      <svg viewBox="0 0 700 240" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <!-- horizontal reference grid -->
+        <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+          <line x1="48"  y1="55"  x2="690" y2="55"/>
+          <line x1="48"  y1="105" x2="690" y2="105"/>
+          <line x1="48"  y1="155" x2="690" y2="155"/>
+          <line x1="48"  y1="205" x2="690" y2="205"/>
+        </g>
+        <g font-family="DM Mono, monospace" font-size="9" fill="rgba(255,255,255,0.32)" letter-spacing="0.5">
+          <text x="14" y="58">+2m</text>
+          <text x="22" y="108">0m</text>
+          <text x="14" y="158">−2m</text>
+          <text x="14" y="208">−4m</text>
+        </g>
+
+        <!-- upstream channel (red, U-shape) -->
+        <path d="M 50 110 L 140 110 L 175 145 Q 210 178 245 145 L 280 110 L 310 110 L 310 220 L 50 220 Z"
+              fill="rgba(192,74,32,0.10)"/>
+        <path d="M 50 110 L 140 110 L 175 145 Q 210 178 245 145 L 280 110 L 310 110"
+              fill="none" stroke="rgba(220,90,70,0.95)" stroke-width="2.2" stroke-linejoin="round"/>
+
+        <!-- road (grey rectangle) -->
+        <rect x="310" y="55" width="80" height="58" fill="#3e4b54" stroke="rgba(255,255,255,0.22)" stroke-width="1" rx="1"/>
+        <line x1="310" y1="68" x2="390" y2="68" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <text x="350" y="92" text-anchor="middle" font-family="DM Mono, monospace" font-size="10" fill="rgba(255,255,255,0.7)" letter-spacing="1.5">ROAD</text>
+
+        <!-- downstream channel (green, lower U-shape) -->
+        <path d="M 390 130 L 425 130 L 460 170 Q 495 200 530 170 L 565 130 L 650 130 L 650 220 L 390 220 Z"
+              fill="rgba(42,122,74,0.10)"/>
+        <path d="M 390 130 L 425 130 L 460 170 Q 495 200 530 170 L 565 130 L 650 130"
+              fill="none" stroke="rgba(120,200,140,0.95)" stroke-width="2.2" stroke-linejoin="round"/>
+
+        <!-- zone labels -->
+        <text x="178" y="34" text-anchor="middle" font-family="DM Mono, monospace" font-size="10" fill="rgba(220,90,70,0.85)" letter-spacing="1.5">UPSTREAM</text>
+        <text x="540" y="34" text-anchor="middle" font-family="DM Mono, monospace" font-size="10" fill="rgba(120,200,140,0.85)" letter-spacing="1.5">DOWNSTREAM</text>
+
+        <!-- channel depth indicator (upstream) -->
+        <line x1="210" y1="110" x2="210" y2="172" stroke="rgba(220,90,70,0.45)" stroke-width="0.8" stroke-dasharray="3,3"/>
+        <circle cx="210" cy="110" r="2" fill="rgba(220,90,70,0.6)"/>
+        <circle cx="210" cy="172" r="2" fill="rgba(220,90,70,0.6)"/>
+        <text x="218" y="148" font-family="DM Mono, monospace" font-size="9" fill="rgba(220,90,70,0.7)" letter-spacing="0.3">channel depth</text>
+
+        <!-- embankment height indicator -->
+        <line x1="350" y1="55" x2="350" y2="113" stroke="rgba(255,255,255,0.25)" stroke-width="0.8" stroke-dasharray="3,3"/>
+        <circle cx="350" cy="55" r="2" fill="rgba(255,255,255,0.4)"/>
+        <circle cx="350" cy="113" r="2" fill="rgba(255,255,255,0.4)"/>
+        <text x="395" y="78" font-family="DM Mono, monospace" font-size="9" fill="rgba(255,255,255,0.45)" letter-spacing="0.3">embankment</text>
+
+        <!-- gradient drop indicator across the road -->
+        <line x1="280" y1="110" x2="425" y2="110" stroke="rgba(168,212,232,0.18)" stroke-width="0.8" stroke-dasharray="2,3"/>
+        <line x1="280" y1="130" x2="425" y2="130" stroke="rgba(168,212,232,0.18)" stroke-width="0.8" stroke-dasharray="2,3"/>
+        <line x1="425" y1="113" x2="425" y2="127" stroke="rgba(168,212,232,0.55)" stroke-width="1"/>
+        <polygon points="425,127 421,121 429,121" fill="rgba(168,212,232,0.55)"/>
+        <text x="432" y="125" font-family="DM Mono, monospace" font-size="9" fill="rgba(168,212,232,0.6)">pipe gradient</text>
+      </svg>
+    </div>
+
+    <div class="terrain-prose">
+      <p><strong>Channel depression depth</strong>Estimates how deep the watercourse cuts below the surrounding terrain.</p>
+      <p><strong>Embankment height</strong>Measures how high the road sits above the channel — approximating the available space for a culvert pipe.</p>
+      <p><strong>Adverse gradient detection</strong>Flags culverts where the outlet appears higher than the inlet, indicating siltation risk or structural settlement.</p>
+      <p><strong>Ponding indicators</strong>Identifies upstream depressions where water may pool against the road embankment.</p>
+    </div>
+
+    <p class="terrain-caveat">Terrain screening is indicative, not measured — it identifies sites worth investigating. Field verification confirms the findings.</p>
+  </div>
+</section>
+
+<!-- SYSTEM (Continuous Monitoring) -->
 <section class="system" id="system">
   <div class="system-inner">
+    <div class="monitoring-intro">
+      <span class="section-tag">Continuous Monitoring</span>
+      <h2 class="section-title">For your highest-priority culverts,<br>add continuous monitoring.</h2>
+      <p>Once you know which culverts matter most, add real-time water level sensors for early warning. No mains power, no cellular dependency — LoRaWAN sensors install at the inlet headwall and alert your team before blockage or overtopping occurs.</p>
+    </div>
+
     <div class="system-header">
       <div>
         <span class="section-tag">How It Works</span>
         <h2 class="section-title">Four components.<br>One early warning.</h2>
       </div>
-      <p class="section-body system-body">The system runs on standard off-the-shelf hardware: no proprietary lock-in, no cellular dependency, no mains power required.</p>
+      <p class="section-body system-body">The system runs on standard off-the-shelf hardware: no proprietary lock-in, no cellular dependency, no in-field mains power required.</p>
     </div>
 
     <div class="nodes">
@@ -1508,6 +2068,24 @@
       </div>
     </div>
 
+    <div class="roi-narrative">
+      <p>A single culvert blockage at <strong>Eel Brook, Church Minshull</strong> generated <strong>£476,000</strong> in insurance claims, triggered an MP inquiry, and required a formal Section 19 investigation. The annual cost of CulvertSense for an entire authority area is a fraction of one major flood event.</p>
+    </div>
+
+    <div class="roi-stats">
+      <div class="roi-stat">
+        <span class="num">£476k</span>
+        <p>insurance claims from a single blocked culvert (Eel Brook, Church Minshull)</p>
+      </div>
+      <div class="roi-stat">
+        <span class="num">839,000</span>
+        <p>homes at high risk of surface water flooding in England (NHF/EA, 2026)</p>
+      </div>
+      <div class="roi-stat">
+        <span class="num">&lt; £25k</span>
+        <p>typical annual cost to screen and prioritise an entire LLFA area</p>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1524,26 +2102,21 @@
     <div class="phases">
       <div class="phase">
         <span class="phase-num">1</span>
-        <div class="phase-title">Pilot</div>
-        <p class="phase-body">We start with your prioritised crossings from the culvert register and survey the top candidates on the ground. We then install one sensor node at a priority location. Data streams to a shared dashboard with simple threshold alerts. We handle everything: installation, configuration and monitoring. No operational dependency; data is advisory only.</p>
-        <div style="margin-top:16px; margin-bottom:4px; font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.3);">Success looks like</div>
-        <ul style="list-style:none; display:flex; flex-direction:column; gap:7px; margin-bottom:16px;">
-          <li style="font-size:13px; color:rgba(255,255,255,0.5);">No hardware failures over the pilot period</li>
-          <li style="font-size:13px; color:rgba(255,255,255,0.5);">Readings consistent with site visual inspections</li>
-          <li style="font-size:13px; color:rgba(255,255,255,0.5);">At least one rainfall event captured and logged</li>
-          <li style="font-size:13px; color:rgba(255,255,255,0.5);">Alert fires correctly when water level rises</li>
-          <li style="font-size:13px; color:rgba(255,255,255,0.5);">Battery life exceeds 3 months in field conditions</li>
-        </ul>
+        <span class="phase-tag">Register</span>
+        <div class="phase-title">Detect &amp; prioritise</div>
+        <p class="phase-body">We deliver your authority's culvert register — every crossing detected, classified, risk-scored from 0–100, and mapped. Review the data with your team, identify priorities, and add your local knowledge. No new software to install — access via web browser.</p>
       </div>
       <div class="phase">
         <span class="phase-num">2</span>
-        <div class="phase-title">Multi-site expansion</div>
-        <p class="phase-body">Following a successful pilot, expand monitoring to your priority culvert network. Each additional node deploys in half a day. One gateway typically covers 10–15 culverts within a 2–5km radius. Data from multiple sites feeds a single dashboard, enabling your team to see catchment-level patterns and prioritise maintenance across your monitored network.</p>
+        <span class="phase-tag">Monitoring</span>
+        <div class="phase-title">Continuous water level</div>
+        <p class="phase-body">For your highest-priority sites, add continuous water level monitoring. Each sensor installs in half a day, requires no mains power, and streams data to a shared dashboard with configurable alerts.</p>
       </div>
       <div class="phase">
         <span class="phase-num">3</span>
-        <div class="phase-title">Predictive intelligence</div>
-        <p class="phase-body">As your sensor network matures, we are developing predictive capabilities by correlating water level trends with Met Office rainfall forecasts to alert your team before levels begin to rise, not just when they do. This is on our development roadmap and available to pilot partners as it develops.</p>
+        <span class="phase-tag">Predictive</span>
+        <div class="phase-title">Forecast-correlated alerts</div>
+        <p class="phase-body">As your sensor network matures, we correlate water level trends with Met Office rainfall forecasts to alert your team before levels begin to rise. Available to pilot partners as it develops.</p>
       </div>
     </div>
 
@@ -1618,6 +2191,10 @@
   <p class="contact-alt">Or email directly: <a href="mailto:james@culvertsense.com">james@culvertsense.com</a></p>
 </section>
 
+<div class="data-sources">
+  Built on Ordnance Survey NGD Water Network · Environment Agency LiDAR &amp; flood risk data · OpenStreetMap
+</div>
+
 <footer>
   <div class="logo">Culvert<span>Sense</span></div>
   <div class="footer-right">
@@ -1660,7 +2237,7 @@
     });
   }, { threshold: 0.1 });
 
-  document.querySelectorAll('.fact-card, .compare-card, .phase, .cost-row, .detection-card').forEach(function(el) {
+  document.querySelectorAll('.fact-card, .compare-card, .phase, .cost-row, .detection-card, .risk-card, .roi-stat, .register-tier, .classify-row').forEach(function(el) {
     el.style.opacity = '0';
     el.style.transform = 'translateY(16px)';
     el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';

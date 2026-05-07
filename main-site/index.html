@@ -1040,7 +1040,7 @@
     line-height: 1.8;
   }
 
-  /* ── HERO SCREENSHOT PLACEHOLDER ── */
+  /* ── HERO DEMO VIDEO ── */
   .hero-screenshot-wrap {
     width: 100%;
     max-width: 1000px;
@@ -1050,52 +1050,16 @@
     z-index: 10;
     animation: fade-up 0.8s 0.5s ease both;
   }
-  .hero-screenshot {
-    background: linear-gradient(160deg, #102a3e, #0a1d2c);
-    border: 1px solid rgba(74,155,196,0.2);
+  .hero-demo-video {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 1000px;
     border-radius: 12px;
     overflow: hidden;
+    background: #07111c;
+    border: 1px solid rgba(74,155,196,0.2);
     box-shadow: 0 28px 80px rgba(0,0,0,0.45), 0 4px 12px rgba(0,0,0,0.3);
-  }
-  .browser-bar {
-    background: rgba(8,18,28,0.85);
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-  }
-  .browser-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
-  .browser-dot.r { background: #ed6a5e; }
-  .browser-dot.y { background: #f4be4f; }
-  .browser-dot.g { background: #61c554; }
-  .browser-url {
-    flex: 1;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.04);
-    border-radius: 4px;
-    padding: 5px 12px;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: rgba(168,212,232,0.5);
-    margin-left: 8px;
-    text-align: center;
-  }
-  .browser-frame {
-    aspect-ratio: 16 / 9;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background:
-      radial-gradient(circle at 28% 32%, rgba(74,155,196,0.22), transparent 55%),
-      radial-gradient(circle at 78% 70%, rgba(212,134,10,0.14), transparent 58%),
-      radial-gradient(circle at 60% 30%, rgba(42,122,74,0.10), transparent 50%),
-      linear-gradient(160deg, #112a39, #07111c);
-    color: rgba(168,212,232,0.42);
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
   }
   .hero-screenshot-cap {
     text-align: center;
@@ -1563,16 +1527,11 @@
     </div>
 
     <div class="hero-screenshot-wrap">
-      <!-- TODO: Add hero screenshot or demo video here -->
-      <div class="hero-screenshot">
-        <div class="browser-bar">
-          <span class="browser-dot r"></span>
-          <span class="browser-dot y"></span>
-          <span class="browser-dot g"></span>
-          <span class="browser-url">app.culvertsense.com / register</span>
-        </div>
-        <div class="browser-frame">Risk-scored culvert map preview</div>
-      </div>
+      <video class="hero-demo-video"
+             autoplay muted loop playsinline preload="metadata"
+             aria-label="CulvertSense product demo: risk-scored culvert map">
+        <source src="assets/video/demo.mp4" type="video/mp4">
+      </video>
       <p class="hero-screenshot-cap">Risk-scored culvert map — real data, live platform</p>
     </div>
   </div>

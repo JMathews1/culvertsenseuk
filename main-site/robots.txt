@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /pilot-site-halifax
+
+Sitemap: https://culvertsense.com/sitemap.xml

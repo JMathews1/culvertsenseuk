@@ -5,6 +5,47 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CulvertSense · Risk-Scored Culvert Register & Monitoring for UK Councils</title>
 <meta name="description" content="CulvertSense detects every culvert crossing in your authority area, scores each one for flood risk and blockage likelihood, and gives your team a prioritised register — with LoRaWAN monitoring for your highest-priority sites.">
+<link rel="canonical" href="https://culvertsense.com/">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CulvertSense">
+<meta property="og:url" content="https://culvertsense.com/">
+<meta property="og:title" content="CulvertSense · Risk-Scored Culvert Register & Monitoring for UK Councils">
+<meta property="og:description" content="CulvertSense detects every culvert crossing in your authority area, scores each one for flood risk and blockage likelihood, and gives your team a prioritised register — with LoRaWAN monitoring for your highest-priority sites.">
+<meta property="og:image" content="https://culvertsense.com/assets/images/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="CulvertSense — risk-scored culvert map for UK councils.">
+<meta property="og:locale" content="en_GB">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="CulvertSense · Risk-Scored Culvert Register & Monitoring for UK Councils">
+<meta name="twitter:description" content="Detect every culvert crossing in your authority area, score each one for flood risk and blockage likelihood, and turn it into a prioritised register your team can work down.">
+<meta name="twitter:image" content="https://culvertsense.com/assets/images/og-image.jpg">
+<meta name="twitter:image:alt" content="CulvertSense — risk-scored culvert map for UK councils.">
+
+<!-- Organization schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "CulvertSense",
+  "url": "https://culvertsense.com",
+  "description": "UK culvert register, risk scoring, and continuous monitoring for Lead Local Flood Authorities.",
+  "areaServed": {
+    "@type": "Country",
+    "name": "United Kingdom"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "email": "james@culvertsense.com",
+    "contactType": "customer support"
+  }
+}
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
@@ -93,6 +134,11 @@
     text-decoration: none;
     transition: color 0.2s;
     outline-offset: 4px;
+    padding: 12px 14px;
+    margin: -12px -14px;
+    display: inline-block;
+    min-height: 44px;
+    line-height: 20px;
   }
   .nav-login:hover { color: var(--foam); }
   .nav-login:focus-visible {
@@ -801,7 +847,8 @@
 
   /* Checkbox group */
   .checkbox-group { display: flex; gap: 12px; flex-wrap: wrap; padding-top: 4px; }
-  .checkbox-option { display: flex; align-items: center; gap: 10px; font-size: 14px; color: rgba(255,255,255,0.7); cursor: pointer; user-select: none; }
+  .checkbox-option { display: flex; align-items: center; gap: 10px; font-size: 14px; color: rgba(255,255,255,0.7); cursor: pointer; user-select: none; padding: 12px 14px; margin: -2px; min-height: 44px; border-radius: 8px; transition: background 0.15s; }
+  .checkbox-option:hover { background: rgba(74,155,196,0.06); }
   .checkbox-option input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 18px; height: 18px; border: 1.5px solid rgba(255,255,255,0.25); border-radius: 4px; background: rgba(255,255,255,0.06); cursor: pointer; flex-shrink: 0; position: relative; transition: background 0.15s, border-color 0.15s; }
   .checkbox-option input[type="checkbox"]:checked { background: var(--water); border-color: var(--water); }
   .checkbox-option input[type="checkbox"]:checked::after { content: ''; position: absolute; left: 50%; top: 50%; width: 5px; height: 9px; border: 2px solid #fff; border-top: none; border-left: none; transform: translate(-50%, -62%) rotate(45deg); }
@@ -1009,6 +1056,9 @@
   .contact-alt a {
     color: var(--water);
     text-decoration: none;
+    padding: 8px 4px;
+    display: inline-block;
+    min-height: 32px;
   }
   .contact-alt a:hover { text-decoration: underline; }
 
@@ -1401,6 +1451,7 @@
     .register .fact-cards { grid-template-columns: 1fr 1fr; }
     .register-tiers, .classify-grid, .risk-grid, .terrain-prose, .roi-stats { grid-template-columns: 1fr; }
     .nodes { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+    .nodes .node-arrow { display: none; }
     .compare-grid, .phases { grid-template-columns: 1fr; }
     .fact-cards { grid-template-columns: 1fr; }
     .stat { padding: 16px 24px; }
@@ -1513,7 +1564,7 @@
   </nav>
 
   <div class="hero-content">
-    <span class="hero-tag">Detection · Risk Scoring · Continuous Monitoring</span>
+    <span class="hero-tag">UK Culvert Register · Risk Scoring · Flood Monitoring</span>
     <h1 class="hero-title">Every culvert.<br><em>Scored.</em> Prioritised.</h1>
     <p class="hero-sub">We map every culvert in your authority area, score each one for flood risk and blockage likelihood, and turn it into a prioritised register your team can work down — so you know where to look before the next storm, not after.</p>
     <div class="hero-ctas">
@@ -1975,7 +2026,7 @@
     <div class="form-row">
       <div class="form-field">
         <label for="f-name">Your name</label>
-        <input type="text" id="f-name" name="name" placeholder="Jane Smith" autocomplete="name" data-fs-field>
+        <input type="text" id="f-name" name="name" placeholder="Jane Smith" autocomplete="name" required data-fs-field>
         <span data-fs-error="name" class="field-error"></span>
       </div>
       <div class="form-field">
@@ -1990,20 +2041,21 @@
         <label class="checkbox-option"><input type="checkbox" name="interest" value="Culvert register (data)"> Culvert register (data)</label>
         <label class="checkbox-option"><input type="checkbox" name="interest" value="Sensor monitoring"> Sensor monitoring</label>
       </div>
+      <span class="field-error" id="f-interest-error"></span>
     </div>
     <div class="form-field">
       <label for="f-council">Council / authority</label>
-      <input type="text" id="f-council" name="council" placeholder="e.g. Lincolnshire County Council" data-fs-field>
+      <input type="text" id="f-council" name="council" placeholder="e.g. Lincolnshire County Council" required data-fs-field>
       <span data-fs-error="council" class="field-error"></span>
     </div>
     <div class="form-field">
       <label for="f-email">Work email</label>
-      <input type="email" id="f-email" name="email" placeholder="jane.smith@lincs.gov.uk" autocomplete="email" data-fs-field>
+      <input type="email" id="f-email" name="email" placeholder="jane.smith@lincs.gov.uk" autocomplete="email" required data-fs-field>
       <span data-fs-error="email" class="field-error"></span>
     </div>
     <div class="form-field">
       <label for="f-sites">Number of candidate culvert sites</label>
-      <select id="f-sites" name="sites" data-fs-field>
+      <select id="f-sites" name="sites" required data-fs-field>
         <option value="" disabled selected>Select an estimate</option>
         <option value="1">1 site (single pilot)</option>
         <option value="2-5">2–5 sites</option>
@@ -2051,14 +2103,29 @@
     });
   });
 
-  /* Smooth scroll */
-  document.querySelectorAll('a[href^="#"]').forEach(function(a) {
-    a.addEventListener('click', function(e) {
-      e.preventDefault();
-      var target = document.querySelector(a.getAttribute('href'));
-      if (target) target.scrollIntoView({ behavior: 'smooth' });
+  /* Smooth scroll handled by `html { scroll-behavior: smooth }` — native anchor jumps only */
+
+  /* "Interested in" requires at least one box ticked. Capture-phase listener
+     fires before Formspree's submit handler so we can cancel cleanly. */
+  (function() {
+    var form = document.getElementById('contact-form');
+    if (!form) return;
+    var errEl = document.getElementById('f-interest-error');
+    function clearErr() { if (errEl) errEl.textContent = ''; }
+    document.querySelectorAll('input[name="interest"]').forEach(function(cb) {
+      cb.addEventListener('change', clearErr);
     });
-  });
+    form.addEventListener('submit', function(e) {
+      var checked = document.querySelectorAll('input[name="interest"]:checked').length;
+      if (checked === 0) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        if (errEl) errEl.textContent = 'Please select at least one option.';
+        var fi = document.getElementById('f-interest');
+        if (fi) fi.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, true);
+  })();
 
   /* Scroll-in animations */
   var observer = new IntersectionObserver(function(entries) {

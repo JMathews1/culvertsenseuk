@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page not found · CulvertSense</title>
+<meta name="description" content="The page you were looking for doesn't exist. Head back to the CulvertSense homepage.">
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://culvertsense.com/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400&family=Instrument+Serif&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy:  #0d1f2d;
+    --water: #4a9bc4;
+    --foam:  #a8d4e8;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: linear-gradient(160deg, #0d1f2d 0%, #1a3a52 45%, #0d2a3e 100%);
+    color: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 48px;
+  }
+  .logo {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+    color: #ffffff;
+    text-decoration: none;
+  }
+  .logo span { color: var(--water); font-style: italic; }
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 24px;
+    gap: 24px;
+  }
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--water);
+    text-transform: uppercase;
+    border: 1px solid rgba(74,155,196,0.3);
+    padding: 6px 16px;
+    border-radius: 20px;
+  }
+  h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(56px, 12vw, 140px);
+    line-height: 1;
+    letter-spacing: -3px;
+  }
+  h1 em { color: var(--water); font-style: italic; }
+  p {
+    font-size: 17px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.65);
+    max-width: 480px;
+    font-weight: 300;
+  }
+  .home-link {
+    background: var(--water);
+    color: var(--navy);
+    font-weight: 500;
+    font-size: 14px;
+    padding: 14px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+    display: inline-block;
+    margin-top: 8px;
+  }
+  .home-link:hover { background: var(--foam); transform: translateY(-1px); }
+  footer {
+    padding: 24px 48px;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.06em;
+  }
+  @media (max-width: 480px) {
+    nav { padding: 20px 24px; }
+    footer { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo">Culvert<span>Sense</span></a>
+</nav>
+<main>
+  <span class="tag">404 · Page not found</span>
+  <h1>Off the <em>map.</em></h1>
+  <p>We couldn't find the page you were looking for. It may have been moved, or the link may be wrong.</p>
+  <a href="/" class="home-link">Back to homepage</a>
+</main>
+<footer>CulvertSense Ltd · Registered in England and Wales</footer>
+</body>
+</html>

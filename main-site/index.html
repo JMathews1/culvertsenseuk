@@ -1575,6 +1575,8 @@
     <div class="hero-screenshot-wrap">
       <video class="hero-demo-video"
              autoplay muted loop playsinline preload="metadata"
+             poster="assets/images/og-image.jpg"
+             width="2940" height="1596"
              aria-label="CulvertSense product demo: risk-scored culvert map">
         <source src="assets/video/demo.mp4" type="video/mp4">
       </video>
@@ -2104,6 +2106,23 @@
   });
 
   /* Smooth scroll handled by `html { scroll-behavior: smooth }` — native anchor jumps only */
+
+  /* Autoplay nudge: if Chrome's autoplay heuristic blocked the initial play(),
+     retry whenever the hero video is on screen. Silently ignores rejection
+     (e.g. user has data-saver / battery-saver fully blocking autoplay). */
+  (function() {
+    var v = document.querySelector('video.hero-demo-video');
+    if (!v || !('IntersectionObserver' in window)) return;
+    var io = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting && v.paused) {
+          var p = v.play();
+          if (p && typeof p.catch === 'function') p.catch(function() {});
+        }
+      });
+    }, { threshold: 0.1 });
+    io.observe(v);
+  })();
 
   /* "Interested in" requires at least one box ticked. Capture-phase listener
      fires before Formspree's submit handler so we can cancel cleanly. */
